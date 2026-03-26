@@ -1,4 +1,13 @@
-## 📖 Descripción del Proyecto
+## Integrantes del equipo: 
+* Juan Francisco Escobosa Brocal
+* María López Espinosa
+* Victor Vallejo Uroz
+* Javier Saiz Gomez
+* José Esteban Pérez González
+* Abel Rodríguez Gutiérrez
+* Teo Zaitegui Jódar 
+
+## Impaintor
 Aplicación multijugador con interfaz gráfica basada en mecánicas de deducción y roles ocultos. El flujo central del juego desafía la capacidad de los usuarios para transmitir conceptos visuales sin revelar información clave al jugador que desconoce el contexto.
 
 ## ⚙️ Mecánica de Juego (Core Loop)
