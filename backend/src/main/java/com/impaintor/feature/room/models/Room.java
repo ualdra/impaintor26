@@ -1,95 +1,141 @@
 package com.impaintor.feature.room.models;
 
-import java.security.Timestamp;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
+@Table(name = "rooms")
 public class Room {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
+    @Column(name = "room_code", nullable = false, unique = true, length = 12)
     private String roomCode;
-    private enum mode{RANKED, CUSTOM, SWIRFTPLAY}
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mode", nullable = false)
+    private Mode mode;
+
+    @Column(name = "secret_word")
     private String secretWord;
+
+    @Column(name = "hint_word")
     private String hintWord;
-    private enum winningSide{ IMPAINTOR, PAINTOR}
-    private enum endCondition{VOTED_OUT, WORD_GUESSED, OUT_OF_LIVES, TIE_NOT_BROKEN, LAST_STANDING}
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "winning_side")
+    private WinningSide winningSide;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "end_condition")
+    private EndCondition endCondition;
+
+    @Column(name = "rounds")
     private Integer rounds;
-    private Timestamp playedAt;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Long wordGroupId;
+    @CreationTimestamp
+    @Column(name = "played_at", updatable = false)
+    private LocalDateTime playedAt;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Long impostorId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "game_state", nullable = false)
+    private GameState gameState;
 
-    public long getId() {
+    /*PENDIENTE CONECTAR CON USUARIO y WORDGROUPS */
+
+
+    // --- ENUMS ---
+
+    public enum Mode { RANKED, CUSTOM, SWIRFTPLAY }
+    public enum WinningSide { IMPAINTOR, PAINTOR }
+    public enum EndCondition { VOTED_OUT, WORD_GUESSED, OUT_OF_LIVES, TIE_NOT_BROKEN, LAST_STANDING }
+    public enum GameState { WAITING, PLAYING, FINISHED }
+
+    // COSNTRUCTOR
+    public Room() { /*CONSTRUCTOR VACÍO*/}
+
+    // --- GETTERS Y SETTERS ---
+
+    public Long getId() {
         return id;
     }
-    public void setId(long id) {
+
+    public void setId(Long id) {
         this.id = id;
     }
+
     public String getRoomCode() {
         return roomCode;
     }
+
     public void setRoomCode(String roomCode) {
         this.roomCode = roomCode;
     }
-    public mode getMode() {
+
+    public Mode getMode() {
         return mode;
     }
-    public void setMode(mode mode) {
+
+    public void setMode(Mode mode) {
         this.mode = mode;
     }
+
     public String getSecretWord() {
         return secretWord;
     }
+
     public void setSecretWord(String secretWord) {
         this.secretWord = secretWord;
     }
+
     public String getHintWord() {
         return hintWord;
     }
+
     public void setHintWord(String hintWord) {
         this.hintWord = hintWord;
     }
-    public winningSide getWinningSide() {
+
+    public WinningSide getWinningSide() {
         return winningSide;
     }
-    public void setWinningSide(winningSide winningSide) {
+
+    public void setWinningSide(WinningSide winningSide) {
         this.winningSide = winningSide;
     }
-    public endCondition getEndCondition() {
+
+    public EndCondition getEndCondition() {
         return endCondition;
     }
-    public void setEndCondition(endCondition endCondition) {
+
+    public void setEndCondition(EndCondition endCondition) {
         this.endCondition = endCondition;
     }
+
     public Integer getRounds() {
         return rounds;
     }
+
     public void setRounds(Integer rounds) {
         this.rounds = rounds;
     }
-    public Timestamp getPlayedAt() {
+
+    public LocalDateTime getPlayedAt() {
         return playedAt;
     }
-    public void setPlayedAt(Timestamp playedAt) {
+
+    public void setPlayedAt(LocalDateTime playedAt) {
         this.playedAt = playedAt;
     }
-    public Long getWordGroupId() {
-        return wordGroupId;
-    }
-    public void setWordGroupId(Long wordGroupId) {
-        this.wordGroupId = wordGroupId;
-    }
-    public Long getImpostorId() {
-        return impostorId;
-    }
-    public void setImpostorId(Long impostorId) {
-        this.impostorId = impostorId;
-    } 
 
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
 }
-
