@@ -10,7 +10,7 @@ public class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "room_code", nullable = false, unique = true, length = 12)
     private String roomCode;
@@ -44,6 +44,10 @@ public class Room {
     @Column(name = "game_state", nullable = false)
     private GameState gameState;
 
+    @Column(name = "size")
+    private Integer size;
+
+
     /*PENDIENTE CONECTAR CON USUARIO y WORDGROUPS */
 
 
@@ -59,11 +63,11 @@ public class Room {
 
     // --- GETTERS Y SETTERS ---
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -137,5 +141,13 @@ public class Room {
 
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer size) {
+        this.size = size;
     }
 }
