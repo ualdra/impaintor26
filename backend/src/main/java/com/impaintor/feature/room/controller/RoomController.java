@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public class RoomController {
     @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     private RoomRepository roomRepository;
 
     @PostMapping("/create")
@@ -72,6 +74,8 @@ public class RoomController {
 */
         room.getPlayersNames().add(playerName);
         roomRepository.save(room);
+
+        messagingTemplate.convertAndSend("/topic/room/" + code, room);
 
         return ResponseEntity.ok(room);
     }
