@@ -47,6 +47,12 @@ public class Room {
     @Column(name = "size")
     private Integer size;
 
+    @Column(name="impostor_tries")
+    private Integer impostorTries;
+
+    @Column(name="draw_time")
+    private Integer drawTime;
+
 
     /*PENDIENTE CONECTAR CON USUARIO y WORDGROUPS */
 
@@ -70,6 +76,23 @@ public class Room {
     public void setId(String id) {
         this.id = id;
     }
+
+    public Integer getImpostorTries(){
+        return this.impostorTries;
+    }
+
+    public void setImpostorTries(Integer impostorTries){
+        this.impostorTries=impostorTries;
+    }
+
+        public Integer getDrawTime(){
+        return this.drawTime;
+    }
+
+    public void setDrawTime(Integer drawTime){
+        this.drawTime=drawTime;
+    }
+
 
     public String getRoomCode() {
         return roomCode;
