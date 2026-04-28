@@ -1,0 +1,66 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/impaintordb
+      SPRING_DATASOURCE_USERNAME: impaintor
+      SPRING_DATASOURCE_PASSWORD: impaintor_pass
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: impaintor
+      SPRING_RABBITMQ_PASSWORD: impaintor
+      REALTIME_BROKER_MODE: relay
+      REALTIME_RELAY_PORT: 61613
+      REALTIME_ALLOWED_ORIGINS: http://localhost:4200,http://frontend
+      IMPAINTOR_JWT_SECRET: dev-secret-change-me-dev-secret-change-me-dev-secret
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: impaintordb
+      POSTGRES_USER: impaintor
+      POSTGRES_PASSWORD: impaintor_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U impaintor -d impaintordb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # management UI (dev only)
+      - "61613:61613"   # STOMP plugin
+    environment:
+      RABBITMQ_DEFAULT_USER: impaintor
+      RABBITMQ_DEFAULT_PASS: impaintor
+    # Enable STOMP plugin so Spring's StompBrokerRelay can connect on 61613
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_stomp &&
+               rabbitmq-server"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PENDING — Track E/F: definir frontend/Dockerfile (Angular + Nginx).
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "4200:80"
+  #   depends_on:
+  #     - backend
+
+volumes:
+  pgdata:
