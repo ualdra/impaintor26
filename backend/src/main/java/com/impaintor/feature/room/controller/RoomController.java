@@ -1,10 +1,8 @@
 package com.impaintor.feature.room.controller;
 
 import com.impaintor.feature.room.models.Room;
-import com.impaintor.feature.room.models.Room.Mode;
 import com.impaintor.feature.room.utilities.RandomGenerations;
-
-import lombok.val;
+import com.impaintor.feature.user.models.User;
 
 import java.util.Optional;
 
@@ -22,13 +20,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 @RequestMapping("api/rooms")
-
 public class RoomController {
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired 
     private RoomRepository roomRepository;
 
     @PostMapping("/create")
@@ -40,39 +39,29 @@ public class RoomController {
         
         room.setId(codigoFinal);
         
-        Room savedRoom = roomRepository.save(room);
-        
-        return savedRoom;
+        return roomRepository.save(room);
     }
 
     @PostMapping("/{code}/join")
-    public ResponseEntity<?> joinRoom(@PathVariable String code, @RequestBody Player playerName){  //PENDIENTE CLASE PLAYER
+    public ResponseEntity<?> joinRoom(@PathVariable String code, @RequestBody User user){  
         Optional<Room> oRoom = roomRepository.findById(code);
-        if(oRoom.isEmpty()){return ResponseEntity.notFound().build();}
+        if(oRoom.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
 
         Room room = oRoom.get();
-/* 
-               METODO A IMPLEMENTAR
-                |   |   |   |   |
-                v   v   v   v   v
-*/
-        if(room.getPlayersNames().contains(playerName)){
+
+        if(room.getPlayersNames().contains(user)){
             return ResponseEntity.badRequest().body("El jugador ya está en la sala");
         }
-/* 
-                              METODO A IMPLEMENTAR
-                                |   |   |   |   |
-                                v   v   v   v   v
-*/
-        if(room.getSize() <= room.getPlayersNames().size()){
+
+        // 2. Comprobar si la sala está llena (Añadida comprobación por si getSize() es nulo)
+        if(room.getSize() != null && room.getPlayersNames().size() >= room.getSize()){
             return ResponseEntity.badRequest().body("La sala está llena");
         }
-/* 
-            METODO A IMPLEMENTAR
-            |   |   |   |   |
-            v   v   v   v   v
-*/
-        room.getPlayersNames().add(playerName);
+
+        // 3. Añadir jugador y guardar
+        room.getPlayersNames().add(user);
         roomRepository.save(room);
 
         messagingTemplate.convertAndSend("/topic/room/" + code, room);
@@ -81,24 +70,25 @@ public class RoomController {
     }
 
     @PostMapping("/{code}/leave")
-    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody Player playerName){  //PENDIENTE CLASE PLAYER
+    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody User user){  
         Optional<Room> oRoom = roomRepository.findById(code);
+        
+        // Es buena práctica comprobar si la sala existe antes de hacer .get()
+        if(oRoom.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        
         Room room = oRoom.get();
-/* 
-               METODO A IMPLEMENTAR
-                |   |   |   |   |
-                v   v   v   v   v
-*/
-        if(!room.getPlayersNames().contains(playerName)){
+
+        // 1. Comprobar si está en la sala
+        if(!room.getPlayersNames().contains(user)){
             return ResponseEntity.badRequest().body("El jugador no está en la sala");
         }
-/* 
-            METODO A IMPLEMENTAR
-            |   |   |   |   |
-            v   v   v   v   v
-*/
-        room.getPlayersNames().remove(playerName);
+
+        // 2. Eliminar jugador y guardar
+        room.getPlayersNames().remove(user);
         roomRepository.save(room);
+
 
         return ResponseEntity.ok().body("El jugador ha abandonado la partida");
     }

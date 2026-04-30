@@ -2,7 +2,11 @@ package com.impaintor.feature.room.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
+import com.impaintor.feature.user.models.User;
+import com.impaintor.feature.wordgroup.models.WordGroup;
 
 @Entity
 @Table(name = "rooms")
@@ -53,18 +57,27 @@ public class Room {
     @Column(name="draw_time")
     private Integer drawTime;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "word_group_id") 
+    private WordGroup wordGroup;
 
-    /*PENDIENTE CONECTAR CON USUARIO y WORDGROUPS */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "room_players", 
+        joinColumns = @JoinColumn(name = "room_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> playersNames = new ArrayList<>();
 
 
     // --- ENUMS ---
 
-    public enum Mode { RANKED, CUSTOM, SWIRFTPLAY }
+    public enum Mode { RANKED, CUSTOM, SWIFTPLAY } 
     public enum WinningSide { IMPAINTOR, PAINTOR }
     public enum EndCondition { VOTED_OUT, WORD_GUESSED, OUT_OF_LIVES, TIE_NOT_BROKEN, LAST_STANDING }
     public enum GameState { WAITING, PLAYING, FINISHED }
 
-    // COSNTRUCTOR
+    // CONSTRUCTOR
     public Room() { /*CONSTRUCTOR VACÍO*/}
 
     // --- GETTERS Y SETTERS ---
@@ -85,14 +98,13 @@ public class Room {
         this.impostorTries=impostorTries;
     }
 
-        public Integer getDrawTime(){
+    public Integer getDrawTime(){
         return this.drawTime;
     }
 
     public void setDrawTime(Integer drawTime){
         this.drawTime=drawTime;
     }
-
 
     public String getRoomCode() {
         return roomCode;
@@ -172,5 +184,21 @@ public class Room {
 
     public void setSize(Integer size) {
         this.size = size;
+    }
+
+    public WordGroup getWordGroup() {
+        return wordGroup;
+    }
+
+    public void setWordGroup(WordGroup wordGroup) {
+        this.wordGroup = wordGroup;
+    }
+
+    public List<User> getPlayersNames() {
+        return playersNames;
+    }
+
+    public void setPlayersNames(List<User> playerNames) {
+        this.playersNames = playerNames;
     }
 }
