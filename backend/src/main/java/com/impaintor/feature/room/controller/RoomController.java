@@ -1,5 +1,5 @@
 package com.impaintor.feature.room.controller;
-
+//Commit
 import com.impaintor.feature.room.models.Room;
 import com.impaintor.feature.room.utilities.RandomGenerations;
 import com.impaintor.feature.user.models.User;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("api/rooms")
-public class RoomController {
+public class RoomController{
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
