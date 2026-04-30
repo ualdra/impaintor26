@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/impaintordb
-    username: impaintor
-    password: impaintor_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/impaintordb}
+    username: ${SPRING_DATASOURCE_USERNAME:impaintor}
+    password: ${SPRING_DATASOURCE_PASSWORD:impaintor_pass}
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,7 +11,26 @@ spring:
       hibernate:
         format_sql: true
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+impaintor:
+  realtime:
+    broker:
+      mode: ${REALTIME_BROKER_MODE:relay}        # relay | simple
+      relay-host: ${SPRING_RABBITMQ_HOST:localhost}
+      relay-port: ${REALTIME_RELAY_PORT:61613}    # STOMP port on RabbitMQ
+      relay-login: ${SPRING_RABBITMQ_USERNAME:guest}
+      relay-passcode: ${SPRING_RABBITMQ_PASSWORD:guest}
+    jwt:
+      # PENDING — Track A debe firmar tokens con este mismo secret. En prod, sobreescribir vía env.
+      secret: ${IMPAINTOR_JWT_SECRET:dev-secret-change-me-dev-secret-change-me-dev-secret}
+      issuer: impaintor
+    websocket:
+      endpoint: /ws
+      allowed-origins: ${REALTIME_ALLOWED_ORIGINS:http://localhost:4200,http://frontend}
