@@ -1,0 +1,79 @@
+<div class="canvas-container">
+  <!-- Palabra a dibujar (solo para pintores) -->
+  <div class="word-display" *ngIf="showWord && isActive">
+    <h2>Dibuja: <span class="word">{{ showWord }}</span></h2>
+  </div>
+
+  <!-- Toolbar de herramientas -->
+  <div class="toolbar" *ngIf="isActive">
+    <!-- Selector de color -->
+    <div class="tool-section">
+      <label>Color:</label>
+      <div class="color-palette">
+        <div 
+          *ngFor="let color of colors"
+          class="color-swatch"
+          [style.background-color]="color"
+          [class.selected]="color === brushConfig.color"
+          [class.white-border]="color === '#FFFFFF'"
+          (click)="selectColor(color)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Selector de grosor -->
+    <div class="tool-section">
+      <label>Grosor:</label>
+      <div class="thickness-selector">
+        <button 
+          *ngFor="let thickness of thicknesses"
+          class="thickness-btn"
+          [class.selected]="thickness === brushConfig.thickness"
+          (click)="selectThickness(thickness)">
+          <div 
+            class="thickness-preview" 
+            [style.width.px]="thickness * 3"
+            [style.height.px]="thickness * 3">
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Herramientas -->
+    <div class="tool-section">
+      <label>Herramienta:</label>
+      <div class="tools">
+        <button 
+          class="tool-btn"
+          [class.selected]="brushConfig.tool === 'pen'"
+          (click)="usePen()">
+          ✏️ Pincel
+        </button>
+        <button 
+          class="tool-btn"
+          [class.selected]="brushConfig.tool === 'eraser'"
+          (click)="useEraser()">
+          🧹 Goma
+        </button>
+        <button 
+          class="tool-btn clear-btn"
+          (click)="clearCanvas()">
+          🗑️ Borrar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-wrapper">
+    <canvas 
+      #canvas
+      [class.active]="isActive"
+      [class.inactive]="!isActive"
+      (mousedown)="onMouseDown($event)"
+      (mousemove)="onMouseMove($event)"
+      (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()">
+    </canvas>
+  </div>
+</div>

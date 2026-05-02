@@ -1,0 +1,190 @@
+.canvas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Palabra a dibujar */
+.word-display {
+  text-align: center;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.word-display h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.word {
+  color: #007bff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tool-section label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Paleta de colores */
+.color-palette {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-swatch.selected {
+  border-color: #007bff;
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
+.color-swatch.white-border {
+  border-color: #333;
+}
+
+/* Selector de grosor */
+.thickness-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.thickness-btn {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.thickness-btn:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
+.thickness-btn.selected {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+.thickness-preview {
+  background: #333;
+  border-radius: 50%;
+}
+
+.thickness-btn.selected .thickness-preview {
+  background: #fff;
+}
+
+/* Herramientas */
+.tools {
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+}
+
+.tool-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tool-btn:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
+.tool-btn.selected {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.clear-btn {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.clear-btn:hover {
+  background: #c82333;
+  border-color: #c82333;
+}
+
+/* Canvas */
+.canvas-wrapper {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+canvas {
+  border: 3px solid #333;
+  border-radius: 4px;
+  background: #fff;
+  display: block;
+}
+
+canvas.active {
+  cursor: crosshair;
+}
+
+canvas.inactive {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
