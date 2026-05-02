@@ -1,0 +1,192 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# ============================================
+# FRONTEND (Angular)
+# ============================================
+
+# Compiled output
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+
+# Node
+frontend/node_modules/
+**/node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json.bak
+
+# Angular
+frontend/.angular/cache
+frontend/.sass-cache/
+
+# ============================================
+# BACKEND (Spring Boot + Maven)
+# ============================================
+
+# Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/mvnw
+backend/mvnw.cmd
+**/target/
+
+# Gradle (por si acaso)
+backend/.gradle/
+backend/build/
+
+# Spring Boot
+backend/HELP.md
+backend/.apt_generated
+backend/.factorypath
+backend/.springBeans
+backend/.sts4-cache
+
+# Java compiled
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# ============================================
+# DOCKER & DATABASES
+# ============================================
+
+# Volúmenes de Docker (datos persistentes)
+**/pgdata/
+**/postgres-data/
+**/rabbitmq_data/
+**/mysql-data/
+
+# Docker override files
+docker-compose.override.yml
+
+# ============================================
+# SECRETS & ENVIRONMENT VARIABLES
+# ============================================
+
+# CRÍTICO: NO subir archivos con credenciales
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Spring Boot environment configs
+**/application-dev.yml
+**/application-dev.properties
+**/application-local.yml
+**/application-local.properties
+**/application-secrets.yml
+
+# Excepción: permitir archivos de ejemplo
+!**/application.yml.example
+!**/application.properties.example
+
+# ============================================
+# IDEs and EDITORS
+# ============================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# JetBrains
+.idea_modules/
+*.sublime-workspace
+
+# ============================================
+# TESTING & COVERAGE
+# ============================================
+
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+*.log
+
+# ============================================
+# SYSTEM FILES
+# ============================================
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ============================================
+# TEMPORARY & BUILD FILES
+# ============================================
+
+*.tmp
+*.temp
+*.cache
+.sass-cache/
+/connect.lock
+
+# ============================================
+# LOGS
+# ============================================
+
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ============================================
+# OTROS
+# ============================================
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
