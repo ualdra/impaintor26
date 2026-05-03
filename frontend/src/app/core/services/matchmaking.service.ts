@@ -39,7 +39,6 @@ export class MatchmakingService implements OnDestroy {
 
   private timerInterval?: any;
 
-  /** Inicia la búsqueda de partida competitiva. */
   startSearch(userElo: number = 1000): void {
     this._initialElo.set(userElo);
     this._elapsedSeconds.set(0);

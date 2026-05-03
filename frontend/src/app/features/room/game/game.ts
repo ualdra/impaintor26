@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { CanvasComponent } from '../../game/components/canvas/canvas';
 
 /**
  * Modelo de un jugador en la partida (simulado en frontend).
@@ -36,7 +37,7 @@ interface Player {
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CanvasComponent],
   templateUrl: './game.html',
   styleUrl: './game.css',
 })

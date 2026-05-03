@@ -82,11 +82,7 @@
       >
         <div class="canvas-frame">
           <div class="canvas-placeholder">
-            <!--
-              TODO (Track G): <app-canvas
-                [isActive]="isMyTurn() && !isImpostor()"
-                [roomCode]="roomCode">
-            -->
+            <app-canvas [isActive]="isMyTurn() && !isImpostor()"></app-canvas>
           </div>
         </div>
       </section>
@@ -98,22 +94,6 @@
         <ng-container *ngIf="isImpostor()">🎭 Eres el impostor — ¡adivina la palabra!</ng-container>
       </p>
     </main>
-
-    <!-- ═══ HERRAMIENTAS (derecha) ═════════════════════════════ -->
-    <aside class="tools-panel" aria-label="Panel de herramientas" aria-hidden="true">
-      <div class="brush-cup">
-        <div class="brush brush--a"></div>
-        <div class="brush brush--b"></div>
-        <div class="brush brush--c"></div>
-      </div>
-      <div class="tool-rack">
-        <button class="tool-btn" title="Pincel" type="button">✏️</button>
-        <button class="tool-btn" title="Borrador" type="button">⬜</button>
-        <button class="tool-btn" title="Relleno" type="button">🪣</button>
-        <button class="tool-btn" title="Color" type="button">🎨</button>
-      </div>
-      <div class="size-badge">20</div>
-    </aside>
 
   </div><!-- /game-content -->
 
