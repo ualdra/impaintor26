@@ -4,6 +4,7 @@ import { WelcomeBannerComponent } from './components/welcome-banner/welcome-bann
 import { GameMenuComponent } from './components/game-menu/game-menu.component';
 import { HomeFooterComponent } from './components/home-footer/home-footer.component';
 import { AudioService } from '../../core/services/audio.service';
+import { GameBackgroundComponent } from '../../shared/components/game-background/game-background.component';
 
 /**
  * HomeComponent — Pantalla principal (menú home) de Impaintor.
@@ -14,7 +15,7 @@ import { AudioService } from '../../core/services/audio.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [WelcomeBannerComponent, GameMenuComponent, HomeFooterComponent],
+  imports: [WelcomeBannerComponent, GameMenuComponent, HomeFooterComponent, GameBackgroundComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

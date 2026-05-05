@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { GameBackgroundComponent } from '../../../shared/components/game-background/game-background.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RoomService, RoomConfig } from '../../../core/services/room.service';
@@ -7,7 +8,7 @@ import { RoomService, RoomConfig } from '../../../core/services/room.service';
 @Component({
   selector: 'app-create-room',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, GameBackgroundComponent],
   templateUrl: './create-room.component.html',
   styleUrls: ['./create-room.component.css']
 })

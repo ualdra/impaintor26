@@ -5,12 +5,13 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  /* Fondo mesa de madera en sintonía con el juego */
-  background-color: #6b3a1c;
-  background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 60px, rgba(255,255,255,0.025) 60px, rgba(255,255,255,0.025) 62px, transparent 62px, transparent 90px, rgba(0,0,0,0.04) 90px, rgba(0,0,0,0.04) 92px);
   padding: 2rem;
+  position: relative;
+  overflow: hidden;
   font-family: 'Kalam', cursive;
 }
+
+
 
 .create-room-card {
   background: #fdf8ee;
