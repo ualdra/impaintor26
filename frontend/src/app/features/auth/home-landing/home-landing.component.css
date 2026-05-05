@@ -34,7 +34,7 @@
   align-items: center;
   gap: 1.6rem;
   padding: 2.6rem 2.4rem 2.8rem;
-  width: min(92vw, 500px);
+  width: min(95vw, 600px);
 
   background: transparent;
   border-radius: 32px;
@@ -57,7 +57,7 @@
   mix-blend-mode: multiply;
   margin-bottom: -3rem;
   position: relative;
-  top: 8vh;
+  top: 2vh;
   /* Mueve solo el gato hacia abajo */
   filter:
     drop-shadow(0 6px 18px rgba(50, 30, 5, 0.28)) drop-shadow(0 2px 6px rgba(50, 30, 5, 0.15));
@@ -98,7 +98,7 @@
   flex-direction: column;
   gap: 1.1rem;
   width: 100%;
-  margin-top: 0.5rem;
+  margin-top: -1.5rem;
 }
 
 .btn {
@@ -108,7 +108,7 @@
   gap: 0.7rem;
   padding: 1rem 2.2rem;
   border: none;
-  border-radius: 999px;
+  border-radius: 0px;
   font-family: 'Nunito', sans-serif;
   font-size: 1.12rem;
   font-weight: 800;
@@ -119,22 +119,7 @@
   letter-spacing: 0.3px;
 }
 
-/* Shimmer ripple on hover */
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.30) 50%,
-      transparent 70%);
-  transform: translateX(-100%);
-  transition: transform 0.5s ease;
-}
-
-.btn:hover::after {
-  transform: translateX(100%);
-}
+/* Shimmer ripple removed */
 
 .btn:hover {
   transform: translateY(-3px) scale(1.015);
@@ -146,11 +131,11 @@
 
 /* Icon circle */
 .btn-icon {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   background: rgba(255, 255, 255, 0.75);
   border-radius: 999px;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -159,41 +144,57 @@
 }
 
 .btn-plus {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 900;
   margin-left: -4px;
 }
 
 /* ─ Login button — golden/amber (matches reference) */
 .btn-login {
-  background: linear-gradient(135deg, #f6b330 0%, #e8920e 100%);
-  color: #1a2744;
-  box-shadow:
-    0 6px 22px rgba(230, 138, 10, 0.50),
-    0 2px 6px rgba(230, 138, 10, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.40);
+  background: url('/images/landing/btn-brush-gold.png') no-repeat center center;
+  background-size: 100% 100%;
+  background-color: transparent;
+  color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  height: 120px;
+  width: 100%;
+  max-width: 550px;
+  margin: -10px auto;
+}
+
+.btn-login * {
+  display: none !important;
 }
 
 .btn-login:hover {
-  box-shadow:
-    0 10px 30px rgba(230, 138, 10, 0.60),
-    0 4px 10px rgba(230, 138, 10, 0.35);
+  box-shadow: none;
+  filter: brightness(1.05);
 }
 
 /* ─ Register button — teal/turquoise (matches reference) */
 .btn-register {
-  background: linear-gradient(135deg, #22c5bf 0%, #0f8d96 100%);
-  color: #ffffff;
-  box-shadow:
-    0 6px 22px rgba(15, 141, 150, 0.45),
-    0 2px 6px rgba(15, 141, 150, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.30);
+  background: url('/images/landing/btn-brush-teal.png') no-repeat center center;
+  background-size: 100% 100%;
+  background-color: transparent;
+  color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  height: 120px;
+  width: 100%;
+  max-width: 550px;
+  margin: 0px auto;
+}
+
+.btn-register * {
+  display: none !important;
 }
 
 .btn-register:hover {
-  box-shadow:
-    0 10px 30px rgba(15, 141, 150, 0.55),
-    0 4px 10px rgba(15, 141, 150, 0.30);
+  box-shadow: none;
+  filter: brightness(1.05);
 }
 
 /* ─ Guest button — cream/soft white (matches reference) */
@@ -238,9 +239,9 @@
 .tagline {
   text-align: center;
   width: 100%;
-  margin-top: 0.4rem;
-  padding-top: 1rem;
-  border-top: 2px solid rgba(100, 70, 20, 0.12);
+  margin-top: -25px;
+  padding-top: 0;
+  border-top: none;
 }
 
 .tagline p {

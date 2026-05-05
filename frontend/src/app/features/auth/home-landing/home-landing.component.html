@@ -20,7 +20,7 @@
 
       <!-- Forgot password -->
       <p class="forgot-password-link">
-        <a href="#forgot">¿Olvidaste tu contraseña?</a>
+        <a href="javascript:void(0)" (click)="goToForgotPassword()">¿Olvidaste tu contraseña?</a>
       </p>
 
       <!-- Register -->
@@ -30,17 +30,11 @@
         <span class="btn-text">Registrarse</span>
       </button>
 
-      <!-- Guest -->
-      <button class="btn btn-guest" id="btn-invitado">
-        <span class="btn-icon">🐾</span>
-        <span class="btn-text">Continuar como invitado</span>
-      </button>
+      <!-- Tagline as Guest replacement -->
+      <div class="tagline">
+        <p>🎨 Dibuja, engaña y diviértete con tus amigos</p>
+      </div>
 
-    </div>
-
-    <!-- Tagline -->
-    <div class="tagline">
-      <p>🎨 Dibuja, engaña y diviértete con tus amigos</p>
     </div>
   </div>
 </div>

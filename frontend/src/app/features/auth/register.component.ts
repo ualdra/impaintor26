@@ -22,12 +22,22 @@ export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) { }
+
+  toggleShowPassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({

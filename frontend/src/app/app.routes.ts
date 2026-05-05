@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { HomeLandingComponent } from './features/auth/home-landing/home-landing.component';
 import { LoginComponent } from './features/auth/login.component';
 import { RegisterComponent } from './features/auth/register.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 
 import { HomeComponent } from './features/home/home.component';
 import { MatchmakingComponent } from './features/matchmaking/matchmaking.component';
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'matchmaking', component: MatchmakingComponent },
   { path: 'room/create', component: CreateRoomComponent },
   { path: 'room/:code/game', component: Game },
-  // { path: \x27\x2A\x2A\x27, redirectTo: \x27\x27 }
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: '**', redirectTo: '' }
 ];
