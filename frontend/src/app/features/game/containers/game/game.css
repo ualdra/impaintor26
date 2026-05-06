@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.not-auth, .connecting {
+  padding: 2rem;
+  text-align: center;
+  background: #fff8e1;
+  border: 2px dashed #f9a825;
+  border-radius: 8px;
+}
+
+.dev-banner {
+  background: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}

@@ -369,18 +369,47 @@ Plan completo en [docs/track-i-plan.md](./track-i-plan.md). Resumen de decisione
 
 ### 4.5 División P3 / P4 sugerida (negociar entre nosotros)
 
-| Tarea | Sugerencia |
-|---|---|
-| 2I.1 — Container + state machine + StompClient | Pareja (pair programming inicial recomendado) |
-| 2I.2 — `DrawingPhaseView` | P4 (yo conozco el formato `StrokeBroadcast` de Track D) |
-| 2I.3 — `GalleryView` | P3 |
-| 2I.4 — `VotingView` | P4 |
-| 2I.5 — `TieBreakView` | P3 |
-| 2I.6 — `VoteResultView` | P3 |
-| 2I.7 — `GameOverView` | P4 |
-| 2I.8 — UI flotante impostor | **P6** (no nosotros) |
-| 2I.9 — SFX y feedback | **P6** (no nosotros) |
-| `MockGameEventEmitter` + `GameStateService` | P4 |
-| `StompClientService` wrapper | Pareja |
+| Tarea | Sugerencia | Estado |
+|---|---|---|
+| 2I.1 — Container + state machine | P4 ya lo hizo en sesión solo | ✅ Hecho (ver [p4-log.md sec 4](./p4-log.md#4-track-i-fase-1--2--foundation--container-entregado-2026-05-06)) |
+| `MockGameEventEmitter` + `GameStateService` + `StompClientService` | P4 ya lo hizo | ✅ Hecho |
+| 2I.2 — `DrawingPhaseView` | P4 (conozco el formato `StrokeBroadcast` de Track D) | 🟡 Placeholder, falta vista real |
+| 2I.3 — `GalleryView` | P3 | 🟡 Placeholder, falta vista real |
+| 2I.4 — `VotingView` | P4 | 🟡 Placeholder, falta vista real |
+| 2I.5 — `TieBreakView` | P3 | 🟡 Placeholder, falta vista real |
+| 2I.6 — `VoteResultView` | P3 | 🟡 Placeholder, falta vista real |
+| 2I.7 — `GameOverView` | P4 | 🟡 Placeholder, falta vista real |
+| 2I.8 — UI flotante impostor | **P6** (no nosotros) | Slot listo en `game.html` |
+| 2I.9 — SFX y feedback | **P6** (no nosotros) | `gameEvents$` listo en `GameStateService` |
 
 > Es una propuesta. Si prefieres otro reparto, lo hablamos.
+
+---
+
+## 5. Coordinación cruzada con otros tracks
+
+Lista de acciones que activan/desactivan piezas de Track I cuando los demás tracks merge:
+
+- **Track A merge** → borrar `feature/user/models/User.java` (stub) y verificar que la `User` de Track A respeta los campos `id`, `email`, `username`, `password`, `elo`, `gamesPlayed`, `gamesWon`, `createdAt`. Si no, ajustar `Room.java`/`RoomController.java` (Track B).
+- **Track A merge** → confirmar que su `JwtTokenProvider` o equivalente firma con el secret de `impaintor.realtime.jwt.secret`. Si Track A trae su propio secret, unificar en `application.yml`.
+- **Track A merge** → su `SecurityFilterChain` real desactivará `RealtimeSecurityConfig` automáticamente vía `@ConditionalOnMissingBean(SecurityFilterChain.class)`.
+- **Track B merge** → su impl de `RoomMembershipChecker` desactivará `AlwaysAllowMembershipChecker` automáticamente vía `@ConditionalOnMissingBean(RoomMembershipChecker.class)`.
+- **Track B merge** → asegurar que `RoomService.create()` invoque `RoomTopicRegistry.registerRoom(code)` y `RoomService.delete()` invoque `unregisterRoom(code)`.
+- **Track H merge** → su `GameService` (o equivalente) implementará `GameInputHandler` y desactivará `LoggingGameInputHandler` vía `@ConditionalOnMissingBean(GameInputHandler.class)`. También inyectará `RealtimePublisher` para emitir eventos.
+- **Track E merge (frontend)** → su `AuthService` reemplazará el helper directo `frontend/src/app/core/auth/token.ts`. Buscar imports de `getStoredToken` y migrar a `AuthService.getToken()`.
+- **Track F merge (frontend)** → su `WebSocketService` reemplazará nuestro `StompClientService` bajo `features/realtime/`. Cambiar imports en `GameComponent`.
+- **P6 trabaja en 2I.8 / 2I.9** → enchufa su `ImpostorOverlay` en el slot `[impostorOverlay]` y subscribe `AudioService` a `GameStateService.gameEvents$`. Sin tocar nuestros componentes.
+
+---
+
+## 6. Cómo sustituir un placeholder por una vista real (recipe TDD)
+
+Aplica a las 6 sub-vistas (2I.2 → 2I.7). Suponiendo que se quiere implementar `GalleryView`:
+
+1. Abrir `frontend/src/app/features/game/components/gallery-view/gallery-view.spec.ts`.
+2. Borrar el test placeholder y escribir los tests TDD reales (cuadrícula con N items, transición por timer, etc.).
+3. Reemplazar la implementación en `gallery-view.{ts,html,css}`. El `state: GameState` ya está disponible como `@Input` y contiene todo lo necesario (`canvases`, `drawingOrder`, `timeRemainingSec`, …).
+4. **Ningún otro archivo necesita tocarse** — el container ya enchufa el componente correctamente vía `@switch`.
+5. `npm test` valida que los tests del container siguen verdes (solo dependen del selector `[data-testid="gallery-phase"]`, así que mantén ese atributo en el wrapper raíz del HTML real).
+
+Si la vista necesita emitir acciones al servidor (voto, mover voto, jugar otra vez, stroke), añadir un `@Output` al componente y conectar el handler en `game.html` mediante `(voteCast)="onVoteCast($event)"`. El método nuevo en `GameComponent` invoca `this.stomp.send(...)`.

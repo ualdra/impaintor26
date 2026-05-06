@@ -1,24 +1,19 @@
-# P4
+# P4 — Log de trabajo
 
-**Autor:** P4 (José Esteban)
-**Fecha modificación:** 2026-05-06
-**Cobertura:** Track D (Fase 1, completado), CI backend, stub temporal de `User`, plan de Track I (Fase 2).
+Diario personal de P4 (José). Registra qué se hizo, cuándo y por qué. No es un handoff: para reparto y planificación de Track I, ver [track-i-plan.md](./track-i-plan.md). Para SPIs/contratos disponibles, ver el código bajo `com.impaintor.feature.realtime` y los comentarios `// PENDING — Track X`.
 
 ---
 
-## Índice
+## Índice (orden cronológico)
 
-1. [Track D — Infraestructura en Tiempo Real (completado)](#1-track-d--infraestructura-en-tiempo-real-completado)
+1. [Track D — Infraestructura en Tiempo Real (Fase 1, completado)](#1-track-d--infraestructura-en-tiempo-real)
 2. [CI backend (GitHub Actions)](#2-ci-backend-github-actions)
 3. [Stub temporal de `User` (PENDING — Track A)](#3-stub-temporal-de-user-pending--track-a)
-4. [Decisiones técnicas del plan de Track I (pendiente, compartido P3+P4)](#4-decisiones-técnicas-del-plan-de-track-i)
-5. [Plan de implementación de Track I — fases](#5-plan-de-implementación-de-track-i--fases)
-6. [Riesgos abiertos y mitigaciones](#6-riesgos-abiertos-y-mitigaciones)
-7. [Checklist de coordinación cruzada](#7-checklist-de-coordinación-cruzada)
+4. [Track I Fase 1 + 2 — foundation + container (entregado 2026-05-06)](#4-track-i-fase-1--2--foundation--container-entregado-2026-05-06)
 
 ---
 
-## 1. Track D — Infraestructura en Tiempo Real (completado)
+## 1. Track D — Infraestructura en Tiempo Real
 
 Track D cubre las tareas **1D.1 → 1D.6** de la Fase 1: configuración WebSocket/STOMP/RabbitMQ, validación JWT en CONNECT, gestión de topics por sala, retransmisión de trazos, difusión de eventos del juego y entrega de mensajes privados.
 
@@ -58,17 +53,7 @@ Track D cubre las tareas **1D.1 → 1D.6** de la Fase 1: configuración WebSocke
 - 3 `WebSocketIntegrationTest` (cliente STOMP real con SimpleBroker)
 - 1 `ImpaintorApplicationTests`
 
-### 1.3 SPIs / contratos para otros Tracks (con `// PENDING` documentado)
-
-| SPI | Quién la cubrirá | Estado actual |
-|---|---|---|
-| `TokenValidator` | **Track A** | Impl real `JwtTokenValidator` con jjwt ya funcional. Track A solo necesita firmar tokens con el mismo secret de `impaintor.realtime.jwt.secret`. |
-| `RoomMembershipChecker` | **Track B** | Stub `AlwaysAllowMembershipChecker` registrado vía `@Bean @ConditionalOnMissingBean`. Track B aporta su impl real y el stub se desactiva solo. |
-| `RoomTopicRegistry` | **Track B** consumer | Implementado. Track B llama `register/unregister` al crear/destruir salas. |
-| `RealtimePublisher` | **Track H** consumer | Implementado. Track H lo inyecta en su `GameService` y emite eventos. |
-| `GameInputHandler` | **Track H** | Stub `LoggingGameInputHandler`. Track H aporta `GameService` que implementa esta interfaz. |
-
-### 1.4 Decisiones de diseño relevantes
+### 1.3 Decisiones de diseño relevantes
 
 1. **Modo broker condicional vía properties** (no `@Profile`) — más explícito y testeable.
 2. **DTOs sealed + records con discriminador `type` en JSON** — espejo del formato de la sec 6.2 de CLAUDE.md, validable por Jackson.
@@ -77,17 +62,13 @@ Track D cubre las tareas **1D.1 → 1D.6** de la Fase 1: configuración WebSocke
 5. **`@ConditionalOnMissingBean` solo en `@Bean`** (no en `@Component` — no funciona ahí). Por eso los stubs son `@Bean` en `RealtimeStubsConfig`.
 6. **Test de integración con `SimpleBroker` en lugar de Testcontainers RabbitMQ** — más rápido, no requiere Docker en CI, y verifica el wiring real de mappings + broadcast.
 
-### 1.5 Cómo correrlo
+### 1.4 Cómo correrlo
 
 ```bash
-# Tests
-cd backend && ./mvnw test
-
-# Build
-./mvnw -DskipTests package
-
-# Stack completo
-docker-compose up --build
+cd backend
+./mvnw test                  # 39 tests verdes
+./mvnw -DskipTests package   # JAR ejecutable
+docker-compose up --build    # stack completo (backend + db + rabbitmq)
 ```
 
 Consola RabbitMQ (dev): http://localhost:15672 (impaintor / impaintor).
@@ -130,11 +111,9 @@ Creé un **stub mínimo** en [backend/src/main/java/com/impaintor/feature/user/m
 
 Es un `@Entity` con `@Table(name = "users")` para que el `@JoinTable(inverseJoinColumns = @JoinColumn(name = "user_id"))` de `Room` se resuelva.
 
-### 3.3 Qué hacer cuando Track A merge
+### 3.3 Cuándo borrarlo
 
-**Borrar este archivo** y dejar que Track A aporte el suyo. Si Track A respeta los nombres de campos de CLAUDE.md sec 4.1 (lo está haciendo), el merge será trivial. Si renombran algún campo, hay que actualizar `Room.java` y `RoomController.java` (ambos son de Track B, no nuestros).
-
-**Marca el archivo con un grep recordatorio:**
+Cuando Track A merge su `User.java` real. Si los nombres de campos de la sec 4.1 de CLAUDE.md se respetan, el merge es trivial. Recordatorio buscable:
 
 ```bash
 grep -r "STUB PROVISIONAL" backend/src/main/java
@@ -142,40 +121,79 @@ grep -r "STUB PROVISIONAL" backend/src/main/java
 
 ---
 
-## 4. Riesgos abiertos y mitigaciones
+## 4. Track I Fase 1 + 2 — foundation + container (entregado 2026-05-06)
 
-| Riesgo | Mitigación | Estado |
+Ejecución parcial del [plan de Track I](./track-i-plan.md): Foundation (modelos + servicios + mock) y container con state machine. Las 6 sub-vistas (Fase 3) quedan como **placeholders visuales** para que cualquier sustitución TDD posterior (P3 o yo) no toque el container.
+
+**Comando de verificación:** `cd frontend && npm test` → 37 tests míos verdes (1 test rojo en `app.spec.ts` preexistente del scaffold de Track G — Canvas API en jsdom; ajeno a Track I y al trabajo P4).
+**Build de producción:** `npm run build` OK, lazy chunk `game` separado correctamente, SSR sin warnings nuevos.
+
+### 4.1 Estado por archivo (qué es qué)
+
+| Archivo | Estado | Notas |
 |---|---|---|
-| Track A renombra campos de `User` y rompe `Room`/`RoomController` | Stub usa nombres exactos de CLAUDE.md sec 4.1 | Mitigado |
-| Track B/C/D editan `dev` con código que no compila (como pasó con `User`) | CI backend bloquea PRs hacia main que no compilen | Mitigado |
-| Track H emite `GameEvent` con forma JSON ligeramente distinta | Yo (P4) controlo los DTOs backend en Track D y los espejos TypeScript en Track I — mismo formato garantizado | Mitigado |
-| `@stomp/stompjs` rompe SSR | `/room/*` es Client-only + `isPlatformBrowser()` guard en el servicio | Plan |
-| Vitest + TestBed compatibility en Angular 21 | Validar primero con un test trivial antes de la suite completa | Plan |
-| 2I.8 (P6) no llega a tiempo | `DrawingPhaseView` tiene un fallback inline `<input>` para que el impostor pueda jugar igual | Plan |
-| Conflicto de merge con Track F (`WebSocketService`) | Aislamos en `features/realtime/` para que F coja el archivo como base | Plan |
+| `frontend/package.json` | ✅ Implementado | añadidos `@stomp/stompjs`, `sockjs-client`, `@types/sockjs-client` |
+| `frontend/proxy.conf.json` | ✅ Implementado | reenvía `/api` y `/ws` al backend en :8080 |
+| `frontend/angular.json` | ✅ Implementado | `serve.options.proxyConfig` apuntando al proxy |
+| `frontend/src/app/app.routes.ts` | ✅ Implementado | ruta lazy `/room/:code/game` |
+| `frontend/src/app/app.routes.server.ts` | ✅ Implementado | `RenderMode.Client` para `/room/**`, prerender para el resto |
+| `frontend/src/app/core/auth/token.ts` | ⏸️ PENDING — Track E | helper `getStoredToken()` lee `localStorage['jwt']`. Track E lo reemplaza con `AuthService.getToken()` |
+| `frontend/src/app/features/realtime/models/stomp.ts` | ⏸️ PENDING — Track F | tipos `ConnectionStatus`, `StompConfig` |
+| `frontend/src/app/features/realtime/services/stomp-client.ts` | ⏸️ PENDING — Track F | wrapper @stomp/stompjs SSR-safe. **Funcional y testeado**, pero F aporta su versión definitiva |
+| `frontend/src/app/features/realtime/services/stomp-client.spec.ts` | ✅ Implementado | 5 tests verdes (connect/status$/subscribe/send/disconnect) |
+| `frontend/src/app/features/game/models/game-event.ts` | ✅ Implementado | discriminated union de los 10 GameEvent + `StrokeBroadcast`/`ClearCanvasBroadcast` (espejo del backend Track D) |
+| `frontend/src/app/features/game/models/role-assignment.ts` | ✅ Implementado | RoleAssignment + GuessResult + PrivateMessage |
+| `frontend/src/app/features/game/models/game-state.ts` | ✅ Implementado | `Phase`, `GameState`, `INITIAL_STATE` |
+| `frontend/src/app/features/game/services/game-state.ts` | ✅ Implementado | store con signals + reducer exhaustivo + `gameEvents$` para SFX (P6) |
+| `frontend/src/app/features/game/services/game-state.spec.ts` | ✅ Implementado | 18 tests verdes — un caso por handler de evento + selectores + reset |
+| `frontend/src/app/features/game/services/mock-game-event-emitter.ts` | 🟡 Stub propio (dev-only) | reproduce un guion de 18 eventos para que `?dev=true` funcione sin backend Track H |
+| `frontend/src/app/features/game/containers/game/game.{ts,html,css}` | ✅ Implementado | container con state machine, `@switch` exhaustivo, slot `[impostorOverlay]` para P6 |
+| `frontend/src/app/features/game/containers/game/game.spec.ts` | ✅ Implementado | 7 tests verdes — uno por fase + caso "no autenticado" + caso "ngOnDestroy desconecta" |
+| `frontend/src/app/features/game/components/drawing-phase-view/*` | 🟡 Placeholder propio | renderiza `<h2>Fase: DRAWING</h2><pre>{{state\|json}}</pre>` (sec 2I.2) |
+| `frontend/src/app/features/game/components/gallery-view/*` | 🟡 Placeholder propio | idem (sec 2I.3) |
+| `frontend/src/app/features/game/components/voting-view/*` | 🟡 Placeholder propio | idem (sec 2I.4) |
+| `frontend/src/app/features/game/components/tie-break-view/*` | 🟡 Placeholder propio | idem (sec 2I.5) |
+| `frontend/src/app/features/game/components/vote-result-view/*` | 🟡 Placeholder propio | idem (sec 2I.6) |
+| `frontend/src/app/features/game/components/game-over-view/*` | 🟡 Placeholder propio | idem (sec 2I.7) |
 
----
+### 4.2 Lo que NO está implementado (consciente)
 
-## 5. Checklist de coordinación cruzada
+- **Sub-vistas reales (2I.2 → 2I.7)**: solo placeholders — la sustitución concreta sigue las indicaciones del plan.
+- **2I.8 — UI flotante del impostor (P6)**: ya hay slot `<ng-content select="[impostorOverlay]">` en `game.html` y signals expuestos en `GameStateService` (`isImpostor()`, `hint()`, `impostorLives()`).
+- **2I.9 — SFX (P6)**: `GameStateService.gameEvents$` (Subject) está listo para que `AudioService` se subscribe.
+- **Tests de integración con backend Track H real**: Track H no existe todavía. Yo controlo ambos espejos JSON (backend Track D + frontend Track I), riesgo bajo cuando llegue.
+- **Estilo visual**: Tailwind disponible pero los placeholders son CSS plano — no quería condicionar a Track K.
 
-**Para cuando los demás tracks merge:**
+### 4.3 Decisiones técnicas de esta entrega
 
-- [ ] **Track A merge** → borrar `feature/user/models/User.java` (stub) y verificar que la `User` de Track A respeta los campos `id`, `email`, `username`, `password`, `elo`, `gamesPlayed`, `gamesWon`, `createdAt`. Si no, ajustar `Room.java`/`RoomController.java` (de Track B).
-- [ ] **Track A merge** → confirmar que su `JwtTokenProvider` o equivalente firma con el secret de `impaintor.realtime.jwt.secret`. Si Track A trae su propio secret, unificar en `application.yml`.
-- [ ] **Track A merge** → el `SecurityFilterChain` real de Track A desactivará `RealtimeSecurityConfig` automáticamente vía `@ConditionalOnMissingBean(SecurityFilterChain.class)`.
-- [ ] **Track B merge** → su impl de `RoomMembershipChecker` desactivará `AlwaysAllowMembershipChecker` automáticamente vía `@ConditionalOnMissingBean(RoomMembershipChecker.class)`.
-- [ ] **Track B merge** → asegurar que `RoomService.create()` invoque `RoomTopicRegistry.registerRoom(code)` y `RoomService.delete()` invoque `unregisterRoom(code)`.
-- [ ] **Track H merge** → su `GameService` (o equivalente) implementará `GameInputHandler` y desactivará `LoggingGameInputHandler` vía `@ConditionalOnMissingBean(GameInputHandler.class)`. También inyectará `RealtimePublisher` para emitir eventos.
-- [ ] **Track E merge (frontend)** → su `AuthService` reemplazará el helper directo `core/auth/token.ts`. Buscar imports de `getToken` y migrar a `AuthService.getToken()`.
-- [ ] **Track F merge (frontend)** → su `WebSocketService` reemplazará nuestro `StompClientService` bajo `features/realtime/`. Cambiar imports en `GameComponent`.
-- [ ] **P6 trabaja en 2I.8 / 2I.9** → enchufa su `ImpostorOverlay` en el slot `[impostorOverlay]` y subscribe `AudioService` a `gameEvents$` de `GameStateService`. Sin tocar nuestros componentes.
+1. **Mock del `Client` de `@stomp/stompjs` con clase, no `vi.fn().mockImplementation`** — `vi.fn()` no es invocable con `new`. Patrón de mock anotado en `stomp-client.spec.ts`.
+2. **Reducer exhaustivo con `default: const _: never = e`** — TypeScript valida en compilación que cualquier `GameEvent` nuevo tiene su case. Esto pillará bugs de regresión cuando crezca la spec.
+3. **Switch en template con `@switch (gameState.phase())`** — Angular 21 control flow nativo, sin `*ngIf` chains. Más legible.
+4. **`MockGameEventEmitter` con `setTimeout` no inyecta timer** — para tests del container uso `mock.emit(event)` sincrónico, no `playFullGameScript()`. El script real solo se usa en demo `?dev=true`.
+5. **`Storage.prototype.getItem` con `vi.spyOn` en tests** — no `window.localStorage.__proto__` (el strict de TS lo bloquea).
+
+### 4.4 Cómo verificar el estado actual
+
+```bash
+cd frontend
+npm install      # solo la primera vez
+npm test         # 37 tests verdes
+npm run build    # bundle producción OK
+npm start        # ng serve en :4200
+
+# En el navegador:
+#   http://localhost:4200/room/TEST/game?dev=true   → demo modo offline (placeholders avanzando)
+#   http://localhost:4200/room/TEST/game            → modo real (requiere JWT en localStorage y backend up)
+```
+
+En el demo `?dev=true` se ve la cabecera azul "🛠️ MODO DEV", luego cada placeholder cambia automáticamente cada ~1.5 s siguiendo el guion: CONNECTING → DRAWING → … → OVER.
 
 ---
 
 ## Apéndice — Cómo levantar todo localmente
 
 ```bash
-# Backend (en una terminal)
+# Backend
 cd backend
 ./mvnw test                                        # 39 tests verdes
 ./mvnw -DskipTests spring-boot:run                  # arranca en :8080 (necesita Postgres + RabbitMQ)
@@ -183,12 +201,10 @@ cd backend
 # Stack completo (recomendado)
 docker-compose up --build                           # backend + db + rabbitmq
 
-# Frontend (cuando Track I esté implementado)
+# Frontend
 cd frontend
 npm install
 npm start                                           # ng serve en :4200
 # O en modo demo offline:
 # abrir http://localhost:4200/room/TEST/game?dev=true
 ```
-
-Cualquier duda → ping a P4 (José Esteban).
