@@ -106,6 +106,51 @@ describe('StompClientService', () => {
     });
   });
 
+  it('subscribe() antes de CONNECT no se pierde — se aplica al conectar', async () => {
+    svc.connect({ url: '/ws', jwt: 't' });
+    // Subscribe inmediatamente, ANTES de que onConnect se dispare (sin await).
+    const received: any[] = [];
+    svc.subscribe<{ type: string }>('/topic/test').subscribe((msg) => received.push(msg));
+
+    const client = mockClientInstances[0];
+    // En este punto la suscripción no debería haberse delegado al cliente todavía
+    // (aún no estaba CONNECTED). Está encolada.
+    expect(client.subscribe).not.toHaveBeenCalled();
+
+    // Esperamos al onConnect (microtask que activate dispara).
+    await new Promise((r) => queueMicrotask(() => r(null)));
+
+    // Tras conectar, la suscripción debe haberse aplicado.
+    expect(client.subscribe).toHaveBeenCalledWith('/topic/test', expect.any(Function));
+
+    // Y los frames entrantes llegan al observable original.
+    const cb = client._subs.get('/topic/test')!;
+    cb({ body: JSON.stringify({ type: 'GAME_START' }) });
+    expect(received).toEqual([{ type: 'GAME_START' }]);
+  });
+
+  it('subscribe() después de CONNECT se aplica inmediatamente', async () => {
+    svc.connect({ url: '/ws', jwt: 't' });
+    await new Promise((r) => queueMicrotask(() => r(null)));
+
+    svc.subscribe<{ type: string }>('/topic/late').subscribe();
+
+    const client = mockClientInstances[0];
+    expect(client.subscribe).toHaveBeenCalledWith('/topic/late', expect.any(Function));
+  });
+
+  it('unsubscribe en una sub pendiente la cancela antes de aplicarse', async () => {
+    svc.connect({ url: '/ws', jwt: 't' });
+    const sub = svc.subscribe<{ type: string }>('/topic/cancelled').subscribe();
+    sub.unsubscribe();
+
+    await new Promise((r) => queueMicrotask(() => r(null)));
+
+    const client = mockClientInstances[0];
+    // Cancelada antes del CONNECT, nunca se delegó al cliente.
+    expect(client.subscribe).not.toHaveBeenCalled();
+  });
+
   it('disconnect() invoca client.deactivate y emite DISCONNECTED', async () => {
     svc.connect({ url: '/ws', jwt: 't' });
     await new Promise((r) => queueMicrotask(() => r(null)));

@@ -1,6 +1,6 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { ConnectionStatus, StompConfig } from '../models/stomp';
@@ -11,6 +11,7 @@ import { ConnectionStatus, StompConfig } from '../models/stomp';
  * Wrapper mínimo sobre @stomp/stompjs que aporta:
  *  - signals/observables de estado de conexión
  *  - subscribe/send tipados con parsing JSON automático
+ *  - cola de suscripciones cuando se llaman antes de CONNECT
  *  - SSR-safe: no hace nada si no estamos en browser
  *
  * Cuando F mergee su WebSocketService, GameComponent solo cambia el import.
@@ -21,6 +22,17 @@ export class StompClientService {
 
   private client: Client | null = null;
   private readonly _status$ = new BehaviorSubject<ConnectionStatus>('IDLE');
+
+  /**
+   * Suscripciones que se solicitaron antes de que el cliente estuviera CONNECTED.
+   * Se aplican en orden cuando llega `onConnect`.
+   */
+  private readonly pendingSubs: Array<{
+    destination: string;
+    handler: (frame: IMessage) => void;
+    cancelled: boolean;
+    bound?: StompSubscription;
+  }> = [];
 
   /** Observable del estado de conexión. */
   readonly status$: Observable<ConnectionStatus> = this._status$.asObservable();
@@ -40,7 +52,10 @@ export class StompClientService {
       brokerURL: this.resolveUrl(config.url),
       connectHeaders: { Authorization: `Bearer ${config.jwt}` },
       reconnectDelay: config.reconnectDelayMs ?? 5_000,
-      onConnect: () => this._status$.next('CONNECTED'),
+      onConnect: () => {
+        this._status$.next('CONNECTED');
+        this.flushPendingSubs();
+      },
       onStompError: () => this._status$.next('ERROR'),
       onWebSocketClose: () => {
         if (this._status$.value !== 'DISCONNECTED') {
@@ -54,22 +69,44 @@ export class StompClientService {
 
   /**
    * Suscribe a un destino STOMP y emite los payloads JSON parseados.
-   * El observable solo emite mientras la suscripción esté activa.
+   * Si todavía no estamos CONNECTED, la suscripción se encola y se aplica al
+   * recibir `onConnect`. Cancelar el observable antes del CONNECT cancela la
+   * suscripción pendiente.
    */
   subscribe<T>(destination: string): Observable<T> {
     return new Observable<T>((subscriber) => {
-      if (!this.client) {
-        subscriber.error(new Error('StompClient not connected'));
-        return;
-      }
-      const sub = this.client.subscribe(destination, (frame: IMessage) => {
+      const handler = (frame: IMessage) => {
         try {
           subscriber.next(JSON.parse(frame.body) as T);
         } catch (e) {
           subscriber.error(e);
         }
-      });
-      return () => sub?.unsubscribe();
+      };
+
+      // Si la conexión STOMP ya está establecida, suscribirse directamente.
+      // Se usa el status real (CONNECTED) en vez de client.active, porque
+      // active=true desde antes del handshake (ej: mientras reconecta).
+      if (this.client && this._status$.value === 'CONNECTED') {
+        try {
+          const sub = this.client.subscribe(destination, handler);
+          return () => sub?.unsubscribe();
+        } catch (e) {
+          subscriber.error(e);
+          return;
+        }
+      }
+
+      // En otro caso, encolar la suscripción y aplicarla al CONNECT.
+      const pending: (typeof this.pendingSubs)[number] = {
+        destination,
+        handler,
+        cancelled: false,
+      };
+      this.pendingSubs.push(pending);
+      return () => {
+        pending.cancelled = true;
+        pending.bound?.unsubscribe();
+      };
     });
   }
 
@@ -90,7 +127,22 @@ export class StompClientService {
     }
     this.client.deactivate();
     this.client = null;
+    this.pendingSubs.length = 0;
     this._status$.next('DISCONNECTED');
+  }
+
+  private flushPendingSubs(): void {
+    if (!this.client?.active) return;
+    while (this.pendingSubs.length > 0) {
+      const pending = this.pendingSubs.shift()!;
+      if (pending.cancelled) continue;
+      try {
+        pending.bound = this.client.subscribe(pending.destination, pending.handler);
+      } catch {
+        // Si subscribe falla, la marcamos cancelada para no reintentar.
+        pending.cancelled = true;
+      }
+    }
   }
 
   /**

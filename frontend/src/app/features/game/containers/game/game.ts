@@ -1,6 +1,5 @@
-import { Component, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { GameStateService } from '../../services/game-state';
@@ -13,18 +12,17 @@ import { VotingView } from '../../components/voting-view/voting-view';
 import { TieBreakView } from '../../components/tie-break-view/tie-break-view';
 import { VoteResultView } from '../../components/vote-result-view/vote-result-view';
 import { GameOverView } from '../../components/game-over-view/game-over-view';
-import { DrawBroadcast, GameEvent, StrokeBroadcast } from '../../models/game-event';
+import { DrawBroadcast, DrawCommand, GameEvent } from '../../models/game-event';
 import { RoleAssignment } from '../../models/role-assignment';
-
-const TOKEN_KEY = 'jwt';
+import { getStoredToken } from '../../../../core/auth/token';
 
 /**
  * Container raíz del flujo del juego (Track I, 2I.1).
  *
  * Responsabilidades:
  *  - Conectar al WebSocket con el JWT del usuario (o usar MockGameEventEmitter en modo ?dev=true)
- *  - Suscribirse a /topic/room.{code}.game y /user/queue/private
- *  - Aplicar cada evento al GameStateService
+ *  - Suscribirse a /topic/room.{code}.game, /topic/room.{code}.draw y /user/queue/private
+ *  - Aplicar cada evento al GameStateService / SpectatorCanvasService
  *  - Renderizar la sub-vista correcta según gameState.phase()
  *  - Slot <ng-content> para que P6 enchufe el ImpostorOverlay (2I.8)
  *
@@ -46,13 +44,17 @@ const TOKEN_KEY = 'jwt';
 })
 export class GameComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly stomp = inject(StompClientService);
   private readonly mock = inject(MockGameEventEmitter);
-  private readonly platformId = inject(PLATFORM_ID);
   readonly gameState = inject(GameStateService);
   // Inyectado para que el servicio se construya y se subscriba a gameEvents$
   // (reset automático en GAME_START / NEW_ROUND). Se pasa via DI a las vistas.
   private readonly spectator = inject(SpectatorCanvasService);
+
+  /** JWT crudo de localStorage. PENDING — Track E lo reemplazará con AuthService.getToken().
+   *  Se lee como field initializer (contexto de inyección válido). */
+  private readonly storedToken = getStoredToken();
 
   /** Id del jugador local. PENDING — Track E lo extraerá del JWT decodificado.
    *  En modo dev hardcoded a 42 (coincide con el guion de MockGameEventEmitter). */
@@ -80,13 +82,12 @@ export class GameComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const token = this.readStoredToken();
-    if (!token) {
+    if (!this.storedToken) {
       this.notAuthenticated = true;
       return;
     }
 
-    this.connectStomp(code, token);
+    this.connectStomp(code, this.storedToken);
   }
 
   ngOnDestroy(): void {
@@ -137,10 +138,14 @@ export class GameComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Reenvía un stroke local al servidor. Invocado por DrawingPhaseView. */
-  protected sendStroke(stroke: Omit<StrokeBroadcast, 'playerId' | 'type'>): void {
+  /**
+   * Reenvía un comando de dibujo (STROKE o CLEAR) al servidor.
+   * Invocado por DrawingPhaseView cuando el jugador local está dibujando.
+   * El servidor añade el `playerId` desde el Principal autenticado.
+   */
+  protected sendDraw(cmd: DrawCommand): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
-    this.stomp.send(`/app/room.${code}.draw`, { type: 'STROKE', ...stroke });
+    this.stomp.send(`/app/room.${code}.draw`, cmd);
   }
 
   /** Envía el voto al servidor. Invocado por VotingView. */
@@ -155,19 +160,12 @@ export class GameComponent implements OnInit, OnDestroy {
     this.stomp.send(`/app/room.${code}.guess`, { guess });
   }
 
-  /** Botón "jugar otra vez" en GameOverView. PENDING — Track F definirá el flujo. */
+  /**
+   * Botón "jugar otra vez" en GameOverView. PENDING — Track F definirá el flujo
+   * definitivo (volver al lobby, crear nueva sala, etc.). Mientras tanto navego
+   * al home `/` para no dejar el botón sin efecto.
+   */
   protected onPlayAgain(): void {
-    // Por ahora simplemente recarga la página/sala — Track F decidirá si vuelve al lobby
-    // o si crea una sala nueva. Marcado para revisar.
-  }
-
-  // PENDING — Track E (Auth) reemplazará con AuthService.getToken().
-  private readStoredToken(): string | null {
-    if (!isPlatformBrowser(this.platformId)) return null;
-    try {
-      return window.localStorage.getItem(TOKEN_KEY);
-    } catch {
-      return null;
-    }
+    this.router.navigate(['/']);
   }
 }

@@ -78,6 +78,17 @@
   color: #333;
 }
 
+.self-marker {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .vote-thumb {
   width: 100%;
   aspect-ratio: 4 / 3;

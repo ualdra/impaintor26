@@ -44,3 +44,12 @@ export interface ClearCanvasBroadcast {
 }
 
 export type DrawBroadcast = StrokeBroadcast | ClearCanvasBroadcast;
+
+/**
+ * Comandos de dibujo que el cliente envía a /app/room.{code}.draw.
+ * El servidor añade el `playerId` desde el Principal autenticado (anti-spoofing),
+ * por eso aquí no aparece.
+ */
+export type DrawCommand =
+  | { type: 'STROKE'; points: { x: number; y: number }[]; color: string; thickness: number }
+  | { type: 'CLEAR' };

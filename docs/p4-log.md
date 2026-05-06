@@ -11,6 +11,7 @@ Diario personal de P4 (José). Registra qué se hizo, cuándo y por qué. No es 
 3. [Stub temporal de `User` (PENDING — Track A)](#3-stub-temporal-de-user-pending--track-a)
 4. [Track I Fase 1 + 2 — foundation + container (entregado 2026-05-06)](#4-track-i-fase-1--2--foundation--container-entregado-2026-05-06)
 5. [Track I — vistas P4 + cierre §4.6 (entregado 2026-05-06)](#5-track-i--vistas-p4--cierre-46-entregado-2026-05-06)
+6. [Track I — fix-up sobre review de Copilot (entregado 2026-05-06)](#6-track-i--fix-up-sobre-review-de-copilot-entregado-2026-05-06)
 
 ---
 
@@ -242,6 +243,53 @@ npm start        # ng serve en :4200
 ```
 
 En `http://localhost:4200/room/TEST/game?dev=true` ahora se ven las 3 vistas reales (Drawing/Voting/GameOver) durante el guion automático del MockGameEventEmitter. Las miniaturas en VotingView salen como placeholder "(sin dibujo)" porque el mock no simula strokes — comportamiento esperado, marcado en docs.
+
+---
+
+## 6. Track I — fix-up sobre review de Copilot (entregado 2026-05-06)
+
+GitHub Copilot revisó el PR y dejó 8 observaciones; las 8 eran válidas. Fix-up commit aplicando todas, ordenadas por gravedad.
+
+**Comando de verificación:** `cd frontend && npm test` → 86 tests míos verdes (1 rojo preexistente ajeno). `npm run build` OK.
+
+### 6.1 Críticos (bugs reales)
+
+**#7 + #8 — strokes nunca llegaban al backend** (core de Track I roto). `DrawingPhaseView` declaraba `@Output strokeEmitted` pero nunca lo emitía: el `<app-canvas>` escribía en `CanvasService.emitStroke()` y nadie se subscribía para reenviar. Además `sendStroke()` estaba hardcoded a `STROKE` y no soportaba `CLEAR`.
+
+Fix:
+- Nuevo tipo `DrawCommand` en `models/game-event.ts`: union `{type:'STROKE',...} | {type:'CLEAR'}` (sin `playerId`, lo añade el server desde el Principal).
+- `DrawingPhaseView` ahora se subscribe a `CanvasService.getStrokeEmitter()` en `ngOnInit`, filtra por `canDraw()`, mapea al formato `DrawCommand` y emite por nuevo `@Output drawCommand`. Limpia la suscripción en `ngOnDestroy`.
+- `GameComponent.sendStroke` reemplazado por `sendDraw(cmd: DrawCommand)` que envía directamente sin reconstrucción.
+- `game.html`: `(strokeEmitted)="sendStroke($event)"` → `(drawCommand)="sendDraw($event)"`.
+- 5 tests nuevos en `drawing-phase-view.spec.ts` (STROKE emite, CLEAR emite, no-mi-turno no emite, IMPOSTOR defensiva no emite, ngOnDestroy desuscribe).
+
+**#1 — `subscribe()` antes de CONNECT.** En `connectStomp()` el `connect()` activa el cliente asíncronamente y `subscribe()` se llamaba acto seguido sincrónicamente. En `@stomp/stompjs` esto puede perder la sub o lanzar.
+
+Fix:
+- `StompClientService` mantiene una cola `pendingSubs[]` cuando `_status$.value !== 'CONNECTED'`. Al recibir `onConnect`, hace `flushPendingSubs()` y aplica todas las pendientes. La condición usa el status real (no `client.active`) porque `active` puede ser `true` desde antes del handshake STOMP completo.
+- `unsubscribe` en una sub pendiente la marca como `cancelled` para no aplicarla al CONNECT.
+- 3 tests nuevos en `stomp-client.spec.ts` (subscribe-before-connect, subscribe-after-connect, unsubscribe en pendiente).
+
+### 6.2 Medios
+
+**#4 — botón "jugar otra vez" muerto.** `onPlayAgain()` estaba vacío. Fix: `router.navigate(['/'])` para no dejar UI sin efecto. Cuando Track F defina el flujo definitivo (volver al lobby, crear nueva sala), se reemplaza la línea.
+
+**#2 — `reconnectAttempts` declarado pero no usado.** `StompConfig` documentaba "delay crece linealmente" pero la impl pasaba un valor fijo a `@stomp/stompjs`. Inconsistencia. Fix: quitado el campo `reconnectAttempts` del modelo y ajustado el comentario de `reconnectDelayMs` a "delay constante de reconexión (default 5000)". Implementar backoff real es over-engineering en este momento.
+
+### 6.3 Menores (cleanup)
+
+**#3 — duplicación de lectura de JWT.** `GameComponent.readStoredToken()` y la const `TOKEN_KEY` repetían lo de `core/auth/token.ts`. Fix: importo `getStoredToken` y lo invoco como **field initializer** (`private readonly storedToken = getStoredToken()`) — único contexto de inyección válido fuera del constructor (Angular 21). Borrados `readStoredToken`, `TOKEN_KEY` local, e imports `PLATFORM_ID` / `isPlatformBrowser`.
+
+**#5 — `myPlayerId` no usado en VotingView.** Per CLAUDE.md sec 2.3 los jugadores SÍ pueden votarse a sí mismos (auto-voto), así que no se filtra. En su lugar marco la tarjeta del jugador local con etiqueta visual `(Tú)` (chip azul). Test nuevo verifica que la etiqueta aparece solo en `myPlayerId` y en ninguna otra tarjeta.
+
+**#6 — import `timer` no usado en `mock-game-event-emitter.ts`.** Quitado.
+
+### 6.4 Nuevos contadores
+
+| Antes | Después | Delta |
+|---|---|---|
+| 77 tests míos verdes | 86 tests míos verdes | +9 (5 wiring strokes, 3 cola subs, 1 etiqueta Tú) |
+| Lazy chunk `game`: 56 kB | Lazy chunk `game`: 57 kB | +1 kB (refactor) |
 
 ---
 

@@ -17,7 +17,7 @@
       <app-drawing-phase-view
         [state]="gameState.state()"
         [myPlayerId]="myPlayerId"
-        (strokeEmitted)="sendStroke($event)"
+        (drawCommand)="sendDraw($event)"
         (guessSubmitted)="sendGuess($event)"
       />
     }

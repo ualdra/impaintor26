@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, timer } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { GameEvent } from '../models/game-event';
 import { RoleAssignment } from '../models/role-assignment';

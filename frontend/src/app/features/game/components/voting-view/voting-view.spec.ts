@@ -130,6 +130,19 @@ describe('VotingView', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="timer"]')?.textContent).toContain('30');
   });
 
+  it('marca la tarjeta del jugador local con etiqueta "(Tú)"', () => {
+    const fixture = TestBed.createComponent(VotingView);
+    fixture.componentRef.setInput('state', baseState());
+    fixture.componentRef.setInput('myPlayerId', 42);
+    fixture.detectChanges();
+
+    const card42 = fixture.nativeElement.querySelector('[data-testid="vote-card-42"]') as HTMLElement;
+    const card7 = fixture.nativeElement.querySelector('[data-testid="vote-card-7"]') as HTMLElement;
+
+    expect(card42.querySelector('[data-testid="self-marker"]')?.textContent).toContain('Tú');
+    expect(card7.querySelector('[data-testid="self-marker"]')).toBeNull();
+  });
+
   it('mantiene el atributo data-testid="voting-phase" en el root', () => {
     const fixture = TestBed.createComponent(VotingView);
     fixture.componentRef.setInput('state', baseState());

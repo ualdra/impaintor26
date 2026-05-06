@@ -16,7 +16,12 @@
         [attr.data-testid]="'vote-card-' + id"
         (click)="onVote(id)"
       >
-        <div class="player-label">Jugador {{ id }}</div>
+        <div class="player-label">
+          Jugador {{ id }}
+          @if (id === myPlayerId) {
+            <span class="self-marker" data-testid="self-marker">(Tú)</span>
+          }
+        </div>
         @if (snapshotFor(id); as src) {
           <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
         } @else {

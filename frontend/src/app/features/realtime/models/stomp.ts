@@ -7,8 +7,6 @@ export interface StompConfig {
   url: string;
   /** Token JWT crudo (sin el prefijo "Bearer "). */
   jwt: string;
-  /** Cuántas veces reintentar la conexión antes de declarar error. */
-  reconnectAttempts?: number;
-  /** Delay base de reconexión en ms (crece linealmente). */
+  /** Delay constante de reconexión en ms (default 5000). */
   reconnectDelayMs?: number;
 }
