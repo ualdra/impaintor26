@@ -1,0 +1,60 @@
+<div class="drawing-phase" data-testid="drawing-phase">
+  <header class="phase-header">
+    <h2>Fase de dibujo — Ronda {{ state.round }}</h2>
+    <div class="timer" data-testid="timer">⏱ {{ state.timeRemainingSec }}s</div>
+  </header>
+
+  @if (state.myRole === 'PAINTER') {
+    <div class="word-banner painter" data-testid="painter-word">
+      Tu palabra: <strong>{{ state.secretWord }}</strong>
+    </div>
+  }
+
+  @if (isImpostor()) {
+    <div class="hint-banner impostor">
+      <span data-testid="impostor-hint">Pista: <strong>{{ state.hint }}</strong></span>
+      <span data-testid="impostor-lives">Vidas: <strong>{{ state.impostorLives }}</strong></span>
+    </div>
+  }
+
+  <main class="canvas-area">
+    @if (state.currentDrawerId === null) {
+      <div class="waiting" data-testid="waiting-for-turn">
+        <p>Esperando al siguiente jugador…</p>
+      </div>
+    } @else if (canDraw()) {
+      <div data-testid="active-canvas">
+        <p class="hint">Es tu turno. Dibuja la palabra.</p>
+        <app-canvas [isActive]="true" [showWord]="state.secretWord ?? ''" />
+      </div>
+    } @else {
+      <div class="spectator" data-testid="spectator-view">
+        <p class="hint">{{ state.currentDrawerId }} está dibujando…</p>
+        @if (drawerSnapshot()) {
+          <img [src]="drawerSnapshot()" alt="Dibujo en directo" class="spectator-img" />
+        } @else {
+          <div class="empty-canvas">(aún no hay trazos)</div>
+        }
+      </div>
+    }
+  </main>
+
+  @if (isImpostor()) {
+    <!-- PENDING — P6 entregará 2I.8 (UI flotante). Este bloque inline es un fallback. -->
+    <aside class="impostor-guess-box" data-testid="impostor-guess-box">
+      <label for="guess-input">Intento de adivinación:</label>
+      <input
+        id="guess-input"
+        data-testid="impostor-guess-input"
+        type="text"
+        placeholder="¿cuál es la palabra?"
+        [value]="guessText()"
+        (input)="onGuessInput($event)"
+        (keydown.enter)="submitGuess()"
+      />
+      <button data-testid="impostor-guess-submit" (click)="submitGuess()" [disabled]="!guessText().trim()">
+        Enviar
+      </button>
+    </aside>
+  }
+</div>

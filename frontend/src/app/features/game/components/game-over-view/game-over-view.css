@@ -1,0 +1,83 @@
+.game-over-view {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.winner-banner {
+  padding: 2rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.winner-banner.painters {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+}
+
+.winner-banner.impostor {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+}
+
+.winner-banner h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+}
+
+.winner-banner .reason {
+  margin: 0;
+  color: #555;
+  font-size: 1rem;
+}
+
+.reveal {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 auto 1.5rem auto;
+  max-width: 480px;
+  text-align: left;
+}
+
+.reveal-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #f9fafb;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  margin: 0;
+}
+
+.reveal-row dt {
+  font-weight: 600;
+  color: #555;
+}
+
+.reveal-row dd {
+  margin: 0;
+  color: #111;
+}
+
+.play-again {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.play-again:hover {
+  background: #1d4ed8;
+}
+
+.no-game-over {
+  padding: 2rem;
+  color: #999;
+}

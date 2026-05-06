@@ -1,0 +1,40 @@
+<div class="voting-view" data-testid="voting-phase">
+  <header class="phase-header">
+    <h2>Fase de votación — Ronda {{ state.round }}</h2>
+    <div class="timer" data-testid="timer">⏱ {{ state.timeRemainingSec }}s</div>
+  </header>
+
+  <p class="instructions">¿Quién crees que es el impostor? Vota tocando una tarjeta.</p>
+
+  <div class="vote-grid">
+    @for (id of votablePlayers(); track id) {
+      <button
+        class="vote-card"
+        [class.voted]="myVote() === id"
+        [class.disabled]="myVote() !== null && myVote() !== id"
+        [disabled]="myVote() !== null"
+        [attr.data-testid]="'vote-card-' + id"
+        (click)="onVote(id)"
+      >
+        <div class="player-label">
+          Jugador {{ id }}
+          @if (id === myPlayerId) {
+            <span class="self-marker" data-testid="self-marker">(Tú)</span>
+          }
+        </div>
+        @if (snapshotFor(id); as src) {
+          <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
+        } @else {
+          <div class="no-drawing">(sin dibujo)</div>
+        }
+        @if (myVote() === id) {
+          <div class="vote-marker">✓ Tu voto</div>
+        }
+      </button>
+    }
+  </div>
+
+  @if (myVote() !== null) {
+    <p class="confirmation">Voto registrado. Esperando al resto…</p>
+  }
+</div>

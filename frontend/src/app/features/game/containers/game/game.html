@@ -1,0 +1,50 @@
+@if (notAuthenticated) {
+  <div class="not-auth" data-testid="not-auth">
+    <h2>No autenticado</h2>
+    <p>Necesitas iniciar sesión para entrar a una sala de juego.</p>
+    <p><em>(O añade <code>?dev=true</code> a la URL para entrar en modo demo.)</em></p>
+  </div>
+} @else {
+  @if (devMode) {
+    <div class="dev-banner">🛠️ MODO DEV — eventos generados localmente por MockGameEventEmitter</div>
+  }
+
+  @switch (gameState.phase()) {
+    @case ('CONNECTING') {
+      <div class="connecting"><h2>Conectando…</h2></div>
+    }
+    @case ('DRAWING') {
+      <app-drawing-phase-view
+        [state]="gameState.state()"
+        [myPlayerId]="myPlayerId"
+        (drawCommand)="sendDraw($event)"
+        (guessSubmitted)="sendGuess($event)"
+      />
+    }
+    @case ('GALLERY') {
+      <app-gallery-view [state]="gameState.state()" />
+    }
+    @case ('VOTING') {
+      <app-voting-view
+        [state]="gameState.state()"
+        [myPlayerId]="myPlayerId"
+        (voteCast)="sendVote($event)"
+      />
+    }
+    @case ('TIE_BREAK') {
+      <app-tie-break-view [state]="gameState.state()" />
+    }
+    @case ('RESULT') {
+      <app-vote-result-view [state]="gameState.state()" />
+    }
+    @case ('OVER') {
+      <app-game-over-view
+        [state]="gameState.state()"
+        (playAgain)="onPlayAgain()"
+      />
+    }
+  }
+
+  <!-- Slot para 2I.8 (P6): UI flotante del impostor. -->
+  <ng-content select="[impostorOverlay]" />
+}
