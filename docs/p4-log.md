@@ -10,6 +10,7 @@ Diario personal de P4 (José). Registra qué se hizo, cuándo y por qué. No es 
 2. [CI backend (GitHub Actions)](#2-ci-backend-github-actions)
 3. [Stub temporal de `User` (PENDING — Track A)](#3-stub-temporal-de-user-pending--track-a)
 4. [Track I Fase 1 + 2 — foundation + container (entregado 2026-05-06)](#4-track-i-fase-1--2--foundation--container-entregado-2026-05-06)
+5. [Track I — vistas P4 + cierre §4.6 (entregado 2026-05-06)](#5-track-i--vistas-p4--cierre-46-entregado-2026-05-06)
 
 ---
 
@@ -187,6 +188,60 @@ npm start        # ng serve en :4200
 ```
 
 En el demo `?dev=true` se ve la cabecera azul "🛠️ MODO DEV", luego cada placeholder cambia automáticamente cada ~1.5 s siguiendo el guion: CONNECTING → DRAWING → … → OVER.
+
+---
+
+## 5. Track I — vistas P4 + cierre §4.6 (entregado 2026-05-06)
+
+Segunda entrega de Track I: implementación real de las 3 sub-vistas que me tocan según el reparto del [plan §4.5](./track-i-plan.md), más el `SpectatorCanvasService` que cierra el gap de §4.6 con la opción B (servicio dedicado).
+
+**Comando de verificación:** `cd frontend && npm test` → 77 tests míos verdes (1 test rojo en `app.spec.ts` preexistente del scaffold de Track G — Canvas API en jsdom; ajeno).
+**Build de producción:** `npm run build` OK, lazy chunk `game` ahora 47 kB (antes 34 kB) con las vistas reales incluidas.
+
+### 5.1 Decisión cerrada — §4.6 Opción B
+
+Resolví el gap de populación de `state.canvases` con un servicio dedicado `SpectatorCanvasService` (Opción B). Razones documentadas en [track-i-plan.md §4.6](./track-i-plan.md). Decisión tomada autónomamente con autorización explícita del usuario y marcada como **reversible** si P3 al pair-program prefiere otra opción.
+
+### 5.2 Estado por archivo (delta sobre la entrega anterior)
+
+| Archivo | Estado | Notas |
+|---|---|---|
+| `frontend/src/app/features/game/services/spectator-canvas.ts` | ✅ Implementado | Mantiene HTMLCanvasElement off-screen por jugador, expone `snapshots` signal, reset auto en GAME_START/NEW_ROUND |
+| `frontend/src/app/features/game/services/spectator-canvas.spec.ts` | ✅ Implementado | 9 tests verdes (replay, clear, reset por evento, dispatch broadcast) |
+| `frontend/src/app/features/game/components/drawing-phase-view/*` | ✅ Implementado (real) | Canvas activo si PAINTER + mi turno; modo espectador con `<img>` en otro caso; banner palabra/pista/vidas; caja inline impostor (fallback hasta P6 entregue 2I.8) |
+| `frontend/src/app/features/game/components/drawing-phase-view/*.spec.ts` | ✅ Implementado | 11 tests verdes (rol, my-turn vs espectador, fallback impostor, timer, no-drawer) |
+| `frontend/src/app/features/game/components/voting-view/*` | ✅ Implementado (real) | Grid de tarjetas con miniatura del SpectatorCanvasService; click vota; lock tras voto; excluye eliminados |
+| `frontend/src/app/features/game/components/voting-view/*.spec.ts` | ✅ Implementado | 9 tests verdes (cards, miniaturas, voteCast emit, lock, eliminado, timer, sin-snapshot) |
+| `frontend/src/app/features/game/components/game-over-view/*` | ✅ Implementado (real) | Banner ganador, reveal de palabra/pista/impostor/rondas, traducción humana de EndReason, botón playAgain |
+| `frontend/src/app/features/game/components/game-over-view/*.spec.ts` | ✅ Implementado | 11 tests verdes (winner, reveal, parametric por EndReason, playAgain emit, defensivo si gameOver null) |
+| `frontend/src/app/features/game/containers/game/game.{ts,html}` | ✅ Modificado | Inyecta SpectatorCanvasService; nueva subscripción a `/topic/room.{code}.draw`; nuevos handlers `sendStroke`, `sendVote`, `sendGuess`, `onPlayAgain`; pasa `myPlayerId` a las vistas (en dev = 42) |
+
+### 5.3 Lo que sigue siendo placeholder (para P3)
+
+- 2I.3 `GalleryView` — falta cuadrícula real (puede consumir `SpectatorCanvasService.snapshots()`)
+- 2I.5 `TieBreakView` — falta destacar `state.tiedPlayers` y opción de mover voto si IMPOSTOR
+- 2I.6 `VoteResultView` — falta revelar `state.eliminated` y `state.wasImpostorEliminated`
+
+### 5.4 Decisiones técnicas de esta entrega
+
+1. **Opción B (servicio dedicado) sobre A (en GameStateService)**: razón principal — mantener `GameStateService` puro y los 18 tests previos sin cambios. Detalle completo en [track-i-plan.md §4.6](./track-i-plan.md).
+2. **`<img>` en lugar de `<canvas>` para miniaturas espectador**: el servicio mantiene canvas off-screen y emite dataURL en cada stroke. Coste ~mínimo para ≤8 jugadores y simplifica el binding (`<img [src]="snapshots()[id]">`). Si la carga de strokes crece mucho, fácil optimizar con throttle del `toDataURL` por stroke.
+3. **Caja de adivinación inline en DrawingPhaseView (fallback impostor)**: en lugar de slot vacío hasta que P6 termine 2I.8. Marcada como PENDING en código y comentario en HTML para que P6 sepa que cuando entregue su overlay, hay que quitar este bloque inline.
+4. **`myPlayerId` hardcoded a 42 en dev mode**: coincide con el guion del MockGameEventEmitter (el primer jugador del `drawingOrder`). Cuando Track E mergee, se decodifica del JWT.
+5. **Mock de Canvas API por test, no global**: `vi.spyOn(HTMLCanvasElement.prototype, 'getContext')` solo en los specs que lo necesitan. No toco la config global de Vitest para no afectar al test preexistente roto del scaffold (responsabilidad de Track G).
+6. **EndReason traducido en el componente, no en GameStateService**: es UI text, no estado. Mantiene el servicio data-only.
+7. **Todos los componentes mantienen `data-testid="<phase>-phase"` en el root**: contrato con los tests del container, garantiza que el `@switch` sigue eligiendo el componente correcto sin importar cómo se reescriba el resto del DOM.
+
+### 5.5 Cómo verificarlo
+
+```bash
+cd frontend
+npm test         # 77 tests míos verdes
+npm run build    # bundle producción OK
+npm start        # ng serve en :4200
+```
+
+En `http://localhost:4200/room/TEST/game?dev=true` ahora se ven las 3 vistas reales (Drawing/Voting/GameOver) durante el guion automático del MockGameEventEmitter. Las miniaturas en VotingView salen como placeholder "(sin dibujo)" porque el mock no simula strokes — comportamiento esperado, marcado en docs.
 
 ---
 

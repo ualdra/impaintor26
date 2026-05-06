@@ -14,13 +14,22 @@
       <div class="connecting"><h2>Conectando…</h2></div>
     }
     @case ('DRAWING') {
-      <app-drawing-phase-view [state]="gameState.state()" />
+      <app-drawing-phase-view
+        [state]="gameState.state()"
+        [myPlayerId]="myPlayerId"
+        (strokeEmitted)="sendStroke($event)"
+        (guessSubmitted)="sendGuess($event)"
+      />
     }
     @case ('GALLERY') {
       <app-gallery-view [state]="gameState.state()" />
     }
     @case ('VOTING') {
-      <app-voting-view [state]="gameState.state()" />
+      <app-voting-view
+        [state]="gameState.state()"
+        [myPlayerId]="myPlayerId"
+        (voteCast)="sendVote($event)"
+      />
     }
     @case ('TIE_BREAK') {
       <app-tie-break-view [state]="gameState.state()" />
@@ -29,7 +38,10 @@
       <app-vote-result-view [state]="gameState.state()" />
     }
     @case ('OVER') {
-      <app-game-over-view [state]="gameState.state()" />
+      <app-game-over-view
+        [state]="gameState.state()"
+        (playAgain)="onPlayAgain()"
+      />
     }
   }
 

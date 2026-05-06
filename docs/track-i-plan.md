@@ -372,17 +372,48 @@ Plan completo en [docs/track-i-plan.md](./track-i-plan.md). Resumen de decisione
 | Tarea | Sugerencia | Estado |
 |---|---|---|
 | 2I.1 — Container + state machine | P4 ya lo hizo en sesión solo | ✅ Hecho (ver [p4-log.md sec 4](./p4-log.md#4-track-i-fase-1--2--foundation--container-entregado-2026-05-06)) |
-| `MockGameEventEmitter` + `GameStateService` + `StompClientService` | P4 ya lo hizo | ✅ Hecho |
-| 2I.2 — `DrawingPhaseView` | P4 (conozco el formato `StrokeBroadcast` de Track D) | 🟡 Placeholder, falta vista real |
+| `MockGameEventEmitter` + `GameStateService` + `StompClientService` + `SpectatorCanvasService` | P4 | ✅ Hecho |
+| 2I.2 — `DrawingPhaseView` | P4 (conozco el formato `StrokeBroadcast` de Track D) | ✅ Hecho (ver [p4-log.md sec 5](./p4-log.md#5-track-i--vistas-p4--cierre-46-entregado-2026-05-06)) |
 | 2I.3 — `GalleryView` | P3 | 🟡 Placeholder, falta vista real |
-| 2I.4 — `VotingView` | P4 | 🟡 Placeholder, falta vista real |
+| 2I.4 — `VotingView` | P4 | ✅ Hecho |
 | 2I.5 — `TieBreakView` | P3 | 🟡 Placeholder, falta vista real |
 | 2I.6 — `VoteResultView` | P3 | 🟡 Placeholder, falta vista real |
-| 2I.7 — `GameOverView` | P4 | 🟡 Placeholder, falta vista real |
-| 2I.8 — UI flotante impostor | **P6** (no nosotros) | Slot listo en `game.html` |
+| 2I.7 — `GameOverView` | P4 | ✅ Hecho |
+| 2I.8 — UI flotante impostor | **P6** (no nosotros) | Slot listo en `game.html`. Fallback inline activo en `DrawingPhaseView` mientras tanto |
 | 2I.9 — SFX y feedback | **P6** (no nosotros) | `gameEvents$` listo en `GameStateService` |
 
 > Es una propuesta. Si prefieres otro reparto, lo hablamos.
+
+### 4.6 Decisión cerrada — populación de `state.canvases` vía `SpectatorCanvasService` (Opción B)
+
+> **Estado:** ✅ Decidido por P4 (autonomía concedida por el usuario). Reversible si P3 lo discute al pair-program.
+> **Implementado:** sí, ver `frontend/src/app/features/game/services/spectator-canvas.ts`.
+
+**Problema.** `GameState.canvases: Map<number, string>` estaba declarado en el modelo pero `GameStateService` no lo poblaba. `VotingView` (P4) y `GalleryView` (P3) necesitan miniaturas de los dibujos de la ronda.
+
+**Opciones consideradas:**
+
+- **Opción A** — `GameStateService` lo gestiona internamente. Centralizado pero **acopla el servicio al DOM** (`HTMLCanvasElement`/`OffscreenCanvas`), rompe los 18 tests existentes (jsdom no implementa Canvas API completa) y mezcla concerns (estado de fase del juego ≠ replay de strokes).
+- **Opción B (elegida)** — Servicio nuevo `SpectatorCanvasService` aparte, se subscribe a `gameStateService.gameEvents$` y a un input de strokes, mantiene canvas off-screen por jugador y expone `snapshots: Signal<Record<id, dataUrl>>`.
+- **Opción C** — Cada vista que muestra miniaturas gestiona sus propios canvas internos. Duplicación entre `GalleryView` y `VotingView`, posible inconsistencia si ambas se muestran simultáneamente, y N×M canvases en RAM en el peor caso.
+
+**Por qué Opción B:**
+
+1. **`GameStateService` queda puro.** Solo maneja `GameEvent`/`RoleAssignment`, no toca DOM. Los 18 tests existentes no cambian.
+2. **Single responsibility.** El replay de strokes es un concern distinto del state machine de fases. Un servicio por concern, cada uno testeable en aislamiento.
+3. **Reutilizable.** `DrawingPhaseView` (modo espectador), `VotingView` y `GalleryView` consumen la misma fuente. P6 podría usarla también si decide mostrar previsualización en el `ImpostorOverlay`.
+4. **Estable frente a Track G/F.** Su contrato es `replayStroke(s) / clearPlayer(id) / snapshots(): Signal<Record<id,dataUrl>>` — invariante aunque cambien internals del Canvas o del WebSocket.
+5. **SSR-safe.** Si `!isPlatformBrowser`, todos los métodos son no-op.
+
+**Notas de implementación.**
+
+- El servicio mantiene `HTMLCanvasElement` off-screen (no insertados en DOM, vía `document.createElement('canvas')`) en un `Map<playerId, HTMLCanvasElement>`, lazy-creados al recibir el primer stroke de un jugador.
+- En cada stroke: dibuja en el canvas correspondiente y actualiza el signal `snapshots` con el nuevo `toDataURL('image/png')`. Es un pequeño coste de perf por stroke (≤8 jugadores × ≤30 strokes/min) pero simplifica el binding (`<img [src]="snapshots()[id]">`) en las vistas.
+- Reset automático: el servicio se subscribe a `gameStateService.gameEvents$` y limpia todos los canvases al recibir `GAME_START` o `NEW_ROUND`.
+- `GameComponent` se subscribe a `/topic/room.{code}.draw` y forwards los `StrokeBroadcast`/`ClearCanvasBroadcast` al servicio.
+- En modo `?dev=true`, los snapshots quedan vacíos porque el `MockGameEventEmitter` no simula strokes — aceptable para demo de fases, marcado en doc del servicio.
+
+**Reversibilidad.** Si P3 al pair-program prefiere otra opción, los cambios están aislados a un único archivo (`spectator-canvas.ts` + spec) y al wiring en `GameComponent`. Migrar a A o C es cuestión de mover ese código.
 
 ---
 

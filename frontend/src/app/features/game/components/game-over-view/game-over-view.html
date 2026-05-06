@@ -1,5 +1,41 @@
-<div class="phase-placeholder" data-testid="game-over-phase">
-  <h2>Fase: OVER</h2>
-  <p><em>PLACEHOLDER — P3/P4 implementará el game over (sec 2I.7).</em></p>
-  <pre>{{ state | json }}</pre>
+<div class="game-over-view" data-testid="game-over-phase">
+  @if (state.gameOver; as g) {
+    <div class="winner-banner" [class.painters]="g.winner === 'PAINTERS'" [class.impostor]="g.winner === 'IMPOSTOR'">
+      <h2 data-testid="winner">
+        @if (g.winner === 'PAINTERS') {
+          🎨 Ganan los Pintores
+        } @else {
+          🕵️ Gana el Impostor
+        }
+      </h2>
+      <p class="reason" data-testid="reason">{{ reasonText(g.reason) }}</p>
+    </div>
+
+    <dl class="reveal">
+      <div class="reveal-row">
+        <dt>Palabra secreta</dt>
+        <dd data-testid="secret-word"><strong>{{ g.secretWord }}</strong></dd>
+      </div>
+      <div class="reveal-row">
+        <dt>Pista del impostor</dt>
+        <dd data-testid="hint">{{ state.hint ?? '—' }}</dd>
+      </div>
+      <div class="reveal-row">
+        <dt>Impostor</dt>
+        <dd data-testid="impostor-id">Jugador {{ g.impostorId }}</dd>
+      </div>
+      <div class="reveal-row">
+        <dt>Rondas jugadas</dt>
+        <dd data-testid="rounds">{{ state.round }}</dd>
+      </div>
+    </dl>
+
+    <button class="play-again" data-testid="play-again" (click)="playAgain.emit()">
+      Jugar otra vez
+    </button>
+  } @else {
+    <div data-testid="no-game-over" class="no-game-over">
+      <p>La partida terminó sin información de cierre.</p>
+    </div>
+  }
 </div>

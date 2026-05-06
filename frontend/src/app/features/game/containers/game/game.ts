@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { GameStateService } from '../../services/game-state';
 import { MockGameEventEmitter } from '../../services/mock-game-event-emitter';
+import { SpectatorCanvasService } from '../../services/spectator-canvas';
 import { StompClientService } from '../../../realtime/services/stomp-client';
 import { DrawingPhaseView } from '../../components/drawing-phase-view/drawing-phase-view';
 import { GalleryView } from '../../components/gallery-view/gallery-view';
@@ -12,7 +13,7 @@ import { VotingView } from '../../components/voting-view/voting-view';
 import { TieBreakView } from '../../components/tie-break-view/tie-break-view';
 import { VoteResultView } from '../../components/vote-result-view/vote-result-view';
 import { GameOverView } from '../../components/game-over-view/game-over-view';
-import { GameEvent } from '../../models/game-event';
+import { DrawBroadcast, GameEvent, StrokeBroadcast } from '../../models/game-event';
 import { RoleAssignment } from '../../models/role-assignment';
 
 const TOKEN_KEY = 'jwt';
@@ -49,6 +50,13 @@ export class GameComponent implements OnInit, OnDestroy {
   private readonly mock = inject(MockGameEventEmitter);
   private readonly platformId = inject(PLATFORM_ID);
   readonly gameState = inject(GameStateService);
+  // Inyectado para que el servicio se construya y se subscriba a gameEvents$
+  // (reset automático en GAME_START / NEW_ROUND). Se pasa via DI a las vistas.
+  private readonly spectator = inject(SpectatorCanvasService);
+
+  /** Id del jugador local. PENDING — Track E lo extraerá del JWT decodificado.
+   *  En modo dev hardcoded a 42 (coincide con el guion de MockGameEventEmitter). */
+  protected myPlayerId: number | null = null;
 
   /** True si no se conecta a Stomp (sin token y sin ?dev=true). */
   notAuthenticated = false;
@@ -64,6 +72,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.devMode = this.route.snapshot.queryParamMap.get('dev') === 'true';
 
     if (this.devMode) {
+      this.myPlayerId = 42;
       this.wireMockEmitter();
       // Aviso visual inicial para el demo.
       queueMicrotask(() => this.mock.emitPainterAssignment('guitarra'));
@@ -113,6 +122,11 @@ export class GameComponent implements OnInit, OnDestroy {
       .subscribe((ev) => this.gameState.applyEvent(ev));
 
     this.stomp
+      .subscribe<DrawBroadcast>(`/topic/room.${code}.draw`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((broadcast) => this.spectator.replayBroadcast(broadcast));
+
+    this.stomp
       .subscribe<RoleAssignment>('/user/queue/private')
       .pipe(takeUntil(this.destroy$))
       .subscribe((msg) => {
@@ -121,6 +135,30 @@ export class GameComponent implements OnInit, OnDestroy {
         }
         // GuessResult del impostor: lo deja al GameStateService como mejora futura.
       });
+  }
+
+  /** Reenvía un stroke local al servidor. Invocado por DrawingPhaseView. */
+  protected sendStroke(stroke: Omit<StrokeBroadcast, 'playerId' | 'type'>): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.stomp.send(`/app/room.${code}.draw`, { type: 'STROKE', ...stroke });
+  }
+
+  /** Envía el voto al servidor. Invocado por VotingView. */
+  protected sendVote(votedPlayerId: number): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.stomp.send(`/app/room.${code}.vote`, { votedPlayerId });
+  }
+
+  /** Envía un intento de adivinación. Invocado por DrawingPhaseView (fallback impostor). */
+  protected sendGuess(guess: string): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.stomp.send(`/app/room.${code}.guess`, { guess });
+  }
+
+  /** Botón "jugar otra vez" en GameOverView. PENDING — Track F definirá el flujo. */
+  protected onPlayAgain(): void {
+    // Por ahora simplemente recarga la página/sala — Track F decidirá si vuelve al lobby
+    // o si crea una sala nueva. Marcado para revisar.
   }
 
   // PENDING — Track E (Auth) reemplazará con AuthService.getToken().
