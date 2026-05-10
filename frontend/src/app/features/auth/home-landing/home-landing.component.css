@@ -51,11 +51,14 @@
 }
 
 .logo {
-  width: clamp(140px, 22vw, 250px);
-  height: clamp(140px, 22vw, 250px);
+  width: 250px;
+  height: 250px;
   object-fit: contain;
   mix-blend-mode: multiply;
-  margin-bottom: clamp(-2rem, -3vw, -3rem);
+  margin-bottom: -3rem;
+  position: relative;
+  top: 2vh;
+  /* Mueve solo el gato hacia abajo */
   filter:
     drop-shadow(0 6px 18px rgba(50, 30, 5, 0.28)) drop-shadow(0 2px 6px rgba(50, 30, 5, 0.15));
   animation: floatLogo 4s ease-in-out infinite;
@@ -81,9 +84,9 @@
 /* Artistic hand-written style title */
 .title-img {
   width: min(95vw, 700px);
-  max-width: 100%;
+  max-width: none;
   object-fit: contain;
-  margin-top: clamp(1rem, 3vw, 2.5rem);
+  margin-top: 2.5rem;
   filter: drop-shadow(2px 4px 10px rgba(26, 39, 68, 0.22));
   user-select: none;
   pointer-events: none;
@@ -155,9 +158,9 @@
   border-radius: 0;
   box-shadow: none;
   border: none;
-  height: clamp(70px, 12vw, 120px);
+  height: 120px;
   width: 100%;
-  max-width: min(95vw, 550px);
+  max-width: 550px;
   margin: -10px auto;
 }
 
@@ -179,10 +182,10 @@
   border-radius: 0;
   box-shadow: none;
   border: none;
-  height: clamp(70px, 12vw, 120px);
+  height: 120px;
   width: 100%;
-  max-width: min(95vw, 550px);
-  margin: 0 auto;
+  max-width: 550px;
+  margin: 0px auto;
 }
 
 .btn-register * {
@@ -250,50 +253,6 @@
   letter-spacing: 0.2px;
 }
 
-<<<<<<< HEAD
-/* ── Tablet grande (≤ 1024px) ─────────────────────────────── */
-@media (max-width: 1024px) {
-  .landing-content {
-    width: min(90vw, 560px);
-    gap: 1.4rem;
-  }
-
-  .btn-login,
-  .btn-register {
-    height: clamp(70px, 11vw, 105px);
-  }
-}
-
-/* ── Tablet pequeña (≤ 768px) ─────────────────────────────── */
-@media (max-width: 768px) {
-  .landing-content {
-    width: min(92vw, 480px);
-    padding: 2rem 1.8rem 2.4rem;
-    gap: 1.2rem;
-  }
-
-  .btn-login,
-  .btn-register {
-    height: clamp(65px, 13vw, 95px);
-  }
-
-  .tagline p {
-    font-size: 0.9rem;
-  }
-}
-
-/* ── Móvil (≤ 480px) ──────────────────────────────────────── */
-@media (max-width: 480px) {
-  .landing-content {
-    padding: 1.8rem 1.4rem 2.2rem;
-    gap: 1.1rem;
-    width: 95vw;
-  }
-
-  .btn-login,
-  .btn-register {
-    height: clamp(60px, 18vw, 85px);
-=======
 /* ── Responsive ──────────────────────────────────────────── */
 /* 1. Mobile (Móviles) */
 @media (max-width: 767px) {
@@ -309,7 +268,6 @@
   }
   .title-img {
     width: 90vw;
->>>>>>> 117c7d0 (Cambios pantalla)
   }
   .btn {
     padding: 0.9rem 1.6rem;
@@ -320,11 +278,6 @@
     height: 30px;
     font-size: 0.95rem;
   }
-<<<<<<< HEAD
-
-  .tagline {
-    margin-top: -15px;
-=======
   .btn-login, .btn-register {
     height: 90px;
   }
@@ -364,6 +317,5 @@
   }
   .btn-login, .btn-register {
     height: 120px;
->>>>>>> 117c7d0 (Cambios pantalla)
   }
 }

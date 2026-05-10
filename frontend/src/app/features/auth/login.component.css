@@ -10,11 +10,7 @@
   overflow: hidden;
   background-image: url('/images/login/login-bg.png');
   background-size: cover;
-<<<<<<< HEAD
-  background-position: center center;
-=======
   background-position: center;
->>>>>>> 117c7d0 (Cambios pantalla)
   background-repeat: no-repeat;
 }
 
@@ -39,7 +35,7 @@
 }
 
 .cat-peek {
-  width: clamp(200px, 50vw, 380px);
+  width: 380px;
   object-fit: contain;
   filter: drop-shadow(0 10px 24px rgba(50, 30, 5, 0.35));
   user-select: none;
@@ -258,34 +254,6 @@ input::-webkit-credentials-auto-fill-button {
   text-decoration: underline;
 }
 
-<<<<<<< HEAD
-/* ── Tablet grande (≤ 1024px) ─────────────────────── */
-@media (max-width: 1024px) {
-  .login-container {
-    width: min(92vw, 420px);
-  }
-}
-
-/* ── Tablet pequeña (≤ 768px) ─────────────────────── */
-@media (max-width: 768px) {
-  .cat-peek {
-    width: clamp(180px, 45vw, 300px);
-  }
-
-  .form-card {
-    padding: 3rem 1.8rem 2.2rem;
-  }
-
-  .login-container {
-    width: min(94vw, 400px);
-  }
-}
-
-/* ── Móvil (≤ 480px) ──────────────────────────────── */
-@media (max-width: 480px) {
-  .cat-peek {
-    width: clamp(160px, 42vw, 260px);
-=======
 /* Media Queries para Responsive: Móviles, Laptops y PC */
 
 /* 1. Mobile (Móviles) */
@@ -295,7 +263,6 @@ input::-webkit-credentials-auto-fill-button {
   }
   .cat-peek {
     width: 280px;
->>>>>>> 117c7d0 (Cambios pantalla)
   }
   .form-card {
     padding: 2rem 1.5rem 1.5rem;

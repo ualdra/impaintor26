@@ -10,11 +10,7 @@
   overflow: hidden;
   background-image: url('/images/login/login-bg.png');
   background-size: cover;
-<<<<<<< HEAD
-  background-position: center center;
-=======
   background-position: center;
->>>>>>> 117c7d0 (Cambios pantalla)
   background-repeat: no-repeat;
 }
 
@@ -50,9 +46,9 @@
 /* ── Gato con pincel ─────────────────────────────── */
 .cat-brush {
   position: absolute;
-  left: clamp(-140px, -15%, -60px);
+  left: -180px;
   bottom: 0;
-  width: clamp(160px, 22vw, 280px);
+  width: 280px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
@@ -297,38 +293,6 @@ input::-webkit-credentials-auto-fill-button {
   text-decoration: underline;
 }
 
-<<<<<<< HEAD
-/* ── Tablet grande (≤ 1024px) ────────────────────── */
-@media (max-width: 1024px) {
-  .register-container {
-    width: min(95vw, 540px);
-  }
-
-  .cat-brush {
-    left: clamp(-100px, -12%, -40px);
-    width: clamp(140px, 18vw, 220px);
-  }
-}
-
-/* ── Tablet pequeña (≤ 768px) ────────────────────── */
-@media (max-width: 768px) {
-  .register-container {
-    width: min(96vw, 480px);
-  }
-
-  .cat-brush {
-    left: clamp(-80px, -10%, -20px);
-    width: clamp(120px, 16vw, 180px);
-  }
-
-  .form-card {
-    padding: 2rem 3rem;
-  }
-}
-
-/* ── Móvil (≤ 600px) ───────────────────────────── */
-@media (max-width: 600px) {
-=======
 /* Media Queries para Responsive: Móviles, Laptops y PC */
 
 /* 1. Mobile (Móviles) */
@@ -336,7 +300,6 @@ input::-webkit-credentials-auto-fill-button {
   .register-container {
     width: 95vw;
   }
->>>>>>> 117c7d0 (Cambios pantalla)
   .cat-brush {
     display: none;
   }
