@@ -28,20 +28,16 @@
 
   /* Fondo de pergamino con gradiente */
   background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255,255,255,0.012) 0px,
-      rgba(255,255,255,0.012) 1px,
+    repeating-linear-gradient(0deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
       transparent 1px,
-      transparent 28px
-    ),
-    linear-gradient(
-      160deg,
+      transparent 28px),
+    linear-gradient(160deg,
       #2e1505 0%,
       #3d1f08 30%,
       #2a1203 70%,
-      #1e0c02 100%
-    );
+      #1e0c02 100%);
 
   border: 2px solid #5c3a1e;
   border-radius: 4px;
@@ -61,14 +57,21 @@
     font-size: 0.9rem;
     top: 10px;
   }
-  &::before { left: 14px; }
-  &::after  { right: 14px; }
+
+  &::before {
+    left: 14px;
+  }
+
+  &::after {
+    right: 14px;
+  }
 }
 
 /* Esquinas inferiores decorativas */
-.home-card > main::before,
-.home-card > main::after {
-  content: none; /* evitar conflicto; usamos seudo en .home-card */
+.home-card>main::before,
+.home-card>main::after {
+  content: none;
+  /* evitar conflicto; usamos seudo en .home-card */
 }
 
 /* ---- Logo del juego ---- */
@@ -106,6 +109,51 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-style: italic;
+}
+
+/* ---- Círculo decorativo con mascota ---- */
+.cat-circle-wrapper {
+  position: relative;
+  /* Fuerza un nuevo contexto de apilamiento para que el círculo absoluto no se vaya detrás de la tarjeta */
+  z-index: 10;
+  width: clamp(240px, 55vw, 340px);
+  aspect-ratio: 1.65 / 1;
+  margin: 0.4rem auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: catFloat 4s ease-in-out infinite;
+}
+
+/* Círculo: ocupa todo el wrapper como fondo absoluto */
+.circle-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Gato: centrado sobre el círculo */
+.cat-image {
+  position: relative;
+  width: 38%;
+  object-fit: contain;
+  z-index: 2;
+}
+
+@keyframes catFloat {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* ---- Responsive: móvil ---- */

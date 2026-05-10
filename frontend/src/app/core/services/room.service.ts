@@ -22,4 +22,8 @@ export class RoomService {
   createRoom(config: RoomConfig): Observable<CreateRoomResponse> {
     return this.http.post<CreateRoomResponse>(this.apiUrl, config);
   }
+
+  joinRoom(roomCode: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${roomCode}/join`, {});
+  }
 }

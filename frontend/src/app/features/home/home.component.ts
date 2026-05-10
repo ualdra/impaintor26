@@ -4,6 +4,7 @@ import { WelcomeBannerComponent } from './components/welcome-banner/welcome-bann
 import { GameMenuComponent } from './components/game-menu/game-menu.component';
 import { HomeFooterComponent } from './components/home-footer/home-footer.component';
 import { AudioService } from '../../core/services/audio.service';
+import { RoomService } from '../../core/services/room.service';
 import { GameBackgroundComponent } from '../../shared/components/game-background/game-background.component';
 
 /**
@@ -22,6 +23,7 @@ import { GameBackgroundComponent } from '../../shared/components/game-background
 export class HomeComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly audioService = inject(AudioService);
+  private readonly roomService = inject(RoomService);
 
   ngOnInit(): void {
     // Iniciar la música del menú principal
@@ -42,7 +44,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   onGameAction(action: string): void {
     if (action.startsWith('join-room:')) {
       const roomCode = action.split(':')[1];
-      this.router.navigate(['/room', roomCode, 'lobby']);
+      this.roomService.joinRoom(roomCode).subscribe({
+        next: () => this.router.navigate(['/room', roomCode, 'lobby']),
+        error: (err) => {
+          console.error('Error al unirse a la sala:', err);
+          alert('No se pudo encontrar la sala o la conexión falló.');
+        }
+      });
       return;
     }
 

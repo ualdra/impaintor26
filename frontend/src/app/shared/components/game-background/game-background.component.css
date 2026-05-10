@@ -1,5 +1,5 @@
 /* 
-   GameBackgroundComponent — Estilos rústicos compartidos 
+   GameBackgroundComponent — Estudio del Pintor Impostor
    ISO 25010 — Mantenibilidad: Centraliza el estilo visual de fondo.
 */
 
@@ -10,13 +10,39 @@
   pointer-events: none;
   overflow: hidden;
 
-  /* Fondo: mapa envejecido / pared de taberna */
+  /* Fondo base: pared oscura de taberna del artista */
   background-color: #1a0e05;
   background-image:
-    /* Ruido de textura */
+    /* Ruido de textura sutil tipo lienzo */
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
-    /* Viñeta oscura */
+    /* Viñeta oscura con toque cálido */
     radial-gradient(ellipse at center, #2d1507 0%, #0f0600 100%);
+}
+
+/* Mancha decorativa de pintura roja (impostor) */
+:host::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Mancha decorativa de pintura dorada (pintor) */
+:host::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: -40px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(201, 168, 108, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 /* ---- Partículas decorativas de fondo ---- */
@@ -30,11 +56,11 @@
 .particle {
   position: absolute;
   font-size: 1.4rem;
-  opacity: 0.07;
+  opacity: 0.06;
   animation: drift linear infinite;
 }
 
-/* Posiciones y tiempos únicos por partícula */
+/* Posiciones y tiempos únicos — herramientas de pintura */
 .particle--1 { left: 8%;  top: 15%; animation-duration: 18s; animation-delay: 0s;   font-size: 1.2rem; }
 .particle--2 { left: 85%; top: 10%; animation-duration: 22s; animation-delay: -4s;  font-size: 1.6rem; }
 .particle--3 { left: 20%; top: 75%; animation-duration: 25s; animation-delay: -8s;  font-size: 1rem; }
@@ -42,8 +68,12 @@
 .particle--5 { left: 45%; top: 5%;  animation-duration: 30s; animation-delay: -15s; font-size: 1.3rem; }
 .particle--6 { left: 92%; top: 50%; animation-duration: 16s; animation-delay: -6s;  font-size: 1rem; }
 
+/* Partículas del impostor */
+.particle--7 { left: 35%; top: 90%; animation-duration: 24s; animation-delay: -10s; font-size: 1.1rem; }
+.particle--8 { left: 60%; top: 30%; animation-duration: 28s; animation-delay: -12s; font-size: 1.5rem; }
+
 @keyframes drift {
-  0%   { transform: translateY(0) rotate(0deg);   opacity: 0.07; }
-  50%  { transform: translateY(-20px) rotate(8deg); opacity: 0.12; }
-  100% { transform: translateY(0) rotate(0deg);   opacity: 0.07; }
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 0.06; }
+  50%  { transform: translateY(-25px) rotate(10deg); opacity: 0.12; }
+  100% { transform: translateY(0) rotate(0deg);   opacity: 0.06; }
 }

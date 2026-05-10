@@ -24,13 +24,11 @@ export class ForgotPasswordComponent {
   onSubmit() {
     if (this.forgotForm.valid) {
       this.isLoading = true;
-      // Simulate an API call
-      setTimeout(() => {
-        this.isLoading = false;
-        this.successMessage = 'Si el correo existe, te hemos enviado un enlace de recuperación.';
-        // Optionally navigate away or reset form
-        this.forgotForm.reset();
-      }, 1500);
+      // TODO: Implementar llamada real al endpoint de recuperación de contraseña (Track C)
+      console.log('Solicitud de recuperación para:', this.forgotForm.value.email);
+      this.isLoading = false;
+      this.successMessage = 'Si el correo existe, recibirás un enlace de recuperación pronto.';
+      this.forgotForm.reset();
     }
   }
 
