@@ -362,3 +362,55 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, #5c3a1e, transparent);
 }
+
+/* ── Tablet pequeña (≤ 768px) ─────────────────────────────── */
+@media (max-width: 768px) {
+  .game-menu {
+    max-width: 420px;
+    padding: 0 0.75rem;
+  }
+
+  .menu-btn {
+    padding: 1rem 1.2rem;
+    gap: 0.8rem;
+  }
+
+  .menu-btn__icon {
+    font-size: 1.7rem;
+  }
+
+  .popup-content {
+    width: 92%;
+    padding: 1.5rem;
+  }
+}
+
+/* ── Móvil (≤ 480px) ──────────────────────────────────────── */
+@media (max-width: 480px) {
+  .game-menu {
+    max-width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .menu-btn {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+  }
+
+  .menu-btn__icon {
+    font-size: 1.5rem;
+  }
+
+  .menu-btn__desc {
+    display: none;
+  }
+
+  .menu-btn__arrow {
+    font-size: 1.3rem;
+  }
+
+  .popup-content {
+    width: 95%;
+    padding: 1.2rem;
+  }
+}

@@ -9,7 +9,7 @@
   justify-content: center;
   overflow: hidden;
   background-image: url('/images/login/login-bg.png');
-  background-size: 100% 100%;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -254,17 +254,53 @@ input::-webkit-credentials-auto-fill-button {
   text-decoration: underline;
 }
 
-@media (max-width: 480px) {
+/* Media Queries para Responsive: Móviles, Laptops y PC */
+
+/* 1. Mobile (Móviles) */
+@media (max-width: 767px) {
+  .login-container {
+    width: 92vw;
+  }
   .cat-peek {
-    width: 350px;
+    width: 280px;
   }
-
   .form-card {
-    padding: 2.5rem 1.3rem 1.8rem;
+    padding: 2rem 1.5rem 1.5rem;
   }
-
   .form-title {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
+  }
+}
+
+/* 2. Laptop (Portátiles) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .login-container {
+    width: 400px;
+  }
+  .cat-peek {
+    width: 320px;
+  }
+  .form-card {
+    padding: 2.5rem 2rem 2rem;
+  }
+  .form-title {
+    font-size: 1.8rem;
+  }
+}
+
+/* 3. PC (Pantallas grandes) */
+@media (min-width: 1025px) {
+  .login-container {
+    width: min(92vw, 460px);
+  }
+  .cat-peek {
+    width: 380px;
+  }
+  .form-card {
+    padding: 3.5rem 2.4rem 2.6rem;
+  }
+  .form-title {
+    font-size: 2.2rem;
   }
 }
 
