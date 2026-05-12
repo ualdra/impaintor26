@@ -15,6 +15,36 @@
   overflow: hidden;
 }
 
+.settings-gear-btn {
+  position: fixed;
+  right: clamp(0.75rem, 2.8vw, 1.6rem);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid #5f3b1d;
+  background: linear-gradient(160deg, #3a220e 0%, #261307 100%);
+  color: #d9b67a;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 30;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 205, 120, 0.18);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.settings-gear-btn:hover {
+  transform: translateY(-50%) scale(1.06);
+  filter: brightness(1.08);
+}
+
+.settings-gear-btn:active {
+  transform: translateY(-50%) scale(0.98);
+}
+
 
 /* ---- Tarjeta principal (pergamino / madera) ---- */
 .home-card {

@@ -4,6 +4,7 @@ import { LoginComponent } from './features/auth/login.component';
 import { RegisterComponent } from './features/auth/register.component';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { HomeComponent } from './features/home/home.component';
+import { ProfileComponent } from './features/auth/profile/profile.component';
 
 // Nuevas rutas
 import { CreateRoomComponent } from './features/room/create/create-room.component';
@@ -14,6 +15,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'main_menu', component: HomeComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: 'profile/:id', component: ProfileComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   
   // Game & Room Routes

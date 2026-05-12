@@ -35,6 +35,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.audioService.stop();
   }
 
+  goToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
   /**
    * Maneja la acción elegida en el GameMenuComponent.
    * Navega a la ruta correspondiente según la acción recibida.

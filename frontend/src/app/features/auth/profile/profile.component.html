@@ -1,0 +1,203 @@
+<div class="profile-page" role="main" aria-label="Perfil de usuario">
+  <header class="profile-header">
+    <button type="button" class="back-btn" (click)="goBackToMainMenu()">Volver al menú</button>
+    <div class="header-copy">
+      <p class="eyebrow">Perfil</p>
+      <h1>Tu espacio personal</h1>
+      <p class="subtitle">Diseño de perfil reservado para futuras partidas, historial y clasificación.</p>
+    </div>
+  </header>
+
+  <section class="profile-summary">
+    <article class="avatar-card panel">
+      <div class="avatar-preview" [class.has-image]="profileDraft().avatarPreview">
+        <img *ngIf="profileDraft().avatarPreview" [src]="profileDraft().avatarPreview" alt="Vista previa del avatar" />
+        <span *ngIf="!profileDraft().avatarPreview">A</span>
+      </div>
+
+      <label for="avatar-upload" class="avatar-upload-btn">Añadir avatar</label>
+      <input id="avatar-upload" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
+
+      <div class="profile-mini-stats">
+        <article class="stat-card">
+          <span class="stat-label">Partidas jugadas</span>
+          <strong class="stat-value">--</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Partidas ganadas</span>
+          <strong class="stat-value">--</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">ELO</span>
+          <strong class="stat-value">--</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Nivel de cuenta</span>
+          <strong class="stat-value">Pendiente</strong>
+        </article>
+      </div>
+    </article>
+
+    <article class="panel account-panel">
+      <h2>Datos de cuenta</h2>
+      <form (ngSubmit)="onSaveProfile()" class="edit-form">
+        <div class="field-group full-width">
+          <label for="nombre-visible">Nombre visible</label>
+          <input
+            id="nombre-visible"
+            type="text"
+            [ngModel]="profileDraft().nombreVisible"
+            (ngModelChange)="profileDraft.set({ ...profileDraft(), nombreVisible: $event })"
+            name="nombreVisible"
+            placeholder="Escribe tu nombre visible"
+            autocomplete="nickname"
+          />
+        </div>
+
+        <div class="field-group full-width">
+          <label for="correo-electronico">Correo electrónico</label>
+          <input
+            id="correo-electronico"
+            type="email"
+            [ngModel]="profileDraft().correoElectronico"
+            (ngModelChange)="profileDraft.set({ ...profileDraft(), correoElectronico: $event })"
+            name="correoElectronico"
+            placeholder="correo@ejemplo.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="field-group">
+          <label for="contrasena-actual">Contraseña actual</label>
+          <div class="input-wrapper">
+            <input
+              id="contrasena-actual"
+              [type]="showContrasenaActual ? 'text' : 'password'"
+              [ngModel]="profileDraft().contrasenaActual"
+              (ngModelChange)="profileDraft.set({ ...profileDraft(), contrasenaActual: $event })"
+              name="contrasenaActual"
+              placeholder="Introduce tu contraseña actual"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="toggleContrasenaActual()"
+              [title]="showContrasenaActual ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              <svg *ngIf="!showContrasenaActual" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showContrasenaActual" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="nueva-contrasena">Nueva contraseña</label>
+          <div class="input-wrapper">
+            <input
+              id="nueva-contrasena"
+              [type]="showNuevaContrasena ? 'text' : 'password'"
+              [ngModel]="profileDraft().nuevaContrasena"
+              (ngModelChange)="profileDraft.set({ ...profileDraft(), nuevaContrasena: $event })"
+              name="nuevaContrasena"
+              placeholder="Nueva contraseña"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="toggleNuevaContrasena()"
+              [title]="showNuevaContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              <svg *ngIf="!showNuevaContrasena" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showNuevaContrasena" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group full-width">
+          <label for="repetir-contrasena">Repetir contraseña</label>
+          <div class="input-wrapper">
+            <input
+              id="repetir-contrasena"
+              [type]="showRepetirContrasena ? 'text' : 'password'"
+              [ngModel]="profileDraft().repetirContrasena"
+              (ngModelChange)="profileDraft.set({ ...profileDraft(), repetirContrasena: $event })"
+              name="repetirContrasena"
+              placeholder="Vuelve a escribir la nueva contraseña"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="toggleRepetirContrasena()"
+              [title]="showRepetirContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              <svg *ngIf="!showRepetirContrasena" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showRepetirContrasena" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="pais">País</label>
+          <input
+            id="pais"
+            type="text"
+            [ngModel]="profileDraft().pais"
+            (ngModelChange)="profileDraft.set({ ...profileDraft(), pais: $event })"
+            name="pais"
+            placeholder="Tu país"
+          />
+        </div>
+
+        <div class="field-group full-width">
+          <label for="biografia">Biografía</label>
+          <textarea
+            id="biografia"
+            rows="4"
+            [ngModel]="profileDraft().biografia"
+            (ngModelChange)="profileDraft.set({ ...profileDraft(), biografia: $event })"
+            name="biografia"
+            placeholder="Escribe una breve presentación"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="save-btn">Guardar cambios</button>
+      </form>
+    </article>
+  </section>
+
+  <section class="profile-panels" aria-label="Historial y clasificación">
+    <article class="panel history-panel">
+      <h2>Historial de partidas</h2>
+      <div class="empty-state">
+        <p class="empty-state__title">Todavía no hay partidas registradas.</p>
+        <p class="empty-state__text">Cuando existan partidas, aquí aparecerán la fecha, el rol, el resultado y el cambio de ELO.</p>
+      </div>
+    </article>
+
+    <article class="panel leaderboard-panel">
+      <h2>Clasificación</h2>
+      <div class="empty-state">
+        <p class="empty-state__title">Aún no hay clasificación disponible.</p>
+        <p class="empty-state__text">Esta zona mostrará el top de jugadores por ELO cuando existan registros.</p>
+      </div>
+    </article>
+  </section>
+</div>
