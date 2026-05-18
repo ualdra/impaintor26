@@ -1,15 +1,17 @@
-// PLACEHOLDER — P3/P4 reemplazará con TDD (ver docs/track-i-plan.md, sec 2I.6).
-// Vista real: revela quién fue eliminado y si era el impostor.
-
 import { Component, Input } from '@angular/core';
-import { JsonPipe } from '@angular/common';
 
 import { GameState } from '../../models/game-state';
 
+/**
+ * 2I.6 — Resultado de votación.
+ *
+ * Revela quién fue eliminado (o que nadie lo fue en ronda 1), si era el
+ * impostor, y la lista semi-anónima de jugadores más votados.
+ */
 @Component({
   selector: 'app-vote-result-view',
   standalone: true,
-  imports: [JsonPipe],
+  imports: [],
   templateUrl: './vote-result-view.html',
   styleUrl: './vote-result-view.css',
 })
