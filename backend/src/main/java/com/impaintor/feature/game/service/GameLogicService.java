@@ -1,9 +1,12 @@
 package com.impaintor.feature.game.service;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
 import com.impaintor.feature.game.models.GameState;
 import com.impaintor.feature.game.models.GuessResult;
+import com.impaintor.feature.game.models.VoteResult;
 
 @Service
 public class GameLogicService {
@@ -18,5 +21,9 @@ public class GameLogicService {
             return GuessResult.builder().isCorrect(false).isGameOver(true).winner("PAINTORS").build();
         }
 
+    }
+
+    public VoteResult handleVotes(GameState state, Map<Long, Long> incomingVotes) {
+        return null;
     }
 }
