@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public sealed interface GameEvent {
 
+    record CanvasSnapshot(Long playerId, String dataUrl) {}
+
     record TopVote(Long id, int votes) {}
 
     record GameStart(List<Long> drawingOrder, int round) implements GameEvent {}
@@ -34,7 +36,7 @@ public sealed interface GameEvent {
 
     record TurnEnd(Long playerId) implements GameEvent {}
 
-    record GalleryPhase() implements GameEvent {}
+    record GalleryPhase(List<CanvasSnapshot> canvases) implements GameEvent {}
 
     record VotePhase(int timeSeconds) implements GameEvent {}
 

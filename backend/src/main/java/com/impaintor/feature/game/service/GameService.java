@@ -6,11 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.impaintor.feature.game.model.GameState;
+import com.impaintor.feature.realtime.dto.outbound.GameEvent.CanvasSnapshot;
 import com.impaintor.feature.realtime.dto.outbound.RoleAssignment;
 import com.impaintor.feature.realtime.service.RealtimePublisher;
 import com.impaintor.feature.room.models.Room;
@@ -18,6 +23,7 @@ import com.impaintor.feature.room.repository.RoomRepository;
 import com.impaintor.feature.user.models.User;
 import com.impaintor.feature.wordgroup.models.WordGroup;
 import com.impaintor.feature.wordgroup.repositories.WordGroupRepository;
+import com.impaintor.feature.realtime.dto.outbound.GameEvent;
 
 /**
  * Inicializa y conserva el estado en memoria de una partida por sala.
@@ -30,6 +36,8 @@ public class GameService {
     private final RealtimePublisher realtimePublisher;
 
     private final Map<String, GameState> activeGames = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
     public GameService(RoomRepository roomRepository,
                        WordGroupRepository wordGroupRepository,
@@ -84,6 +92,9 @@ public class GameService {
 
         activeGames.put(roomCode, gameState);
 
+        // start the first turn cycle
+        startNextTurn(roomCode);
+
         room.setWordGroup(wordGroup);
         room.setSecretWord(secretWord);
         room.setHintWord(hintWord);
@@ -134,6 +145,126 @@ public class GameService {
                 realtimePublisher.sendRoleAssignment(playerId,
                         new RoleAssignment.Painter(gameState.getSecretWord()));
             }
+        }
+    }
+
+    public void recordCanvasSnapshot(String roomCode, Long playerId, String dataUrl) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+        gs.recordCanvasSnapshot(playerId, dataUrl);
+    }
+
+    // --- Turn management ---
+    private void startNextTurn(String roomCode) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+
+        synchronized (gs) {
+            Long drawer = gs.getCurrentDrawer();
+            if (drawer == null) {
+                // no more drawers this round -> gallery phase
+                enterGalleryPhase(roomCode);
+                return;
+            }
+
+            int timeSeconds = roomRepository.findById(roomCode)
+                    .map(Room::getDrawTime)
+                    .filter(d -> d != null && d > 0)
+                    .orElse(30);
+
+            gs.setPhase(GameState.Phase.DRAWING);
+            realtimePublisher.publishGameEvent(roomCode, new GameEvent.TurnStart(drawer, timeSeconds));
+
+            // schedule end of turn
+            ScheduledFuture<?> f = scheduler.schedule(() -> endTurn(roomCode, drawer), timeSeconds, TimeUnit.SECONDS);
+            ScheduledFuture<?> prev = scheduledTasks.put(roomCode, f);
+            if (prev != null) prev.cancel(false);
+        }
+    }
+
+    private void endTurn(String roomCode, Long drawerId) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+
+        synchronized (gs) {
+            // cancel stored task reference
+            ScheduledFuture<?> scheduled = scheduledTasks.remove(roomCode);
+            if (scheduled != null) scheduled.cancel(false);
+
+            realtimePublisher.publishGameEvent(roomCode, new GameEvent.TurnEnd(drawerId));
+
+            // advance to next drawer that is alive
+            gs.advanceDrawer();
+            Long next = gs.getCurrentDrawer();
+            while (next != null && !gs.isPlayerAlive(next)) {
+                gs.advanceDrawer();
+                next = gs.getCurrentDrawer();
+            }
+
+            if (next == null) {
+                // everyone drew -> gallery
+                enterGalleryPhase(roomCode);
+                return;
+            }
+
+            // start next turn
+            startNextTurn(roomCode);
+        }
+    }
+
+    private void enterGalleryPhase(String roomCode) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+
+        synchronized (gs) {
+            ScheduledFuture<?> scheduled = scheduledTasks.remove(roomCode);
+            if (scheduled != null) scheduled.cancel(false);
+
+            gs.setPhase(GameState.Phase.GALLERY);
+
+            List<CanvasSnapshot> snapshots = new ArrayList<>();
+            for (Long playerId : gs.getDrawingOrder()) {
+                String dataUrl = gs.getCanvasSnapshots().get(playerId);
+                if (dataUrl != null) {
+                    snapshots.add(new CanvasSnapshot(playerId, dataUrl));
+                }
+            }
+            for (Map.Entry<Long, String> entry : gs.getCanvasSnapshots().entrySet()) {
+                boolean alreadyAdded = snapshots.stream().anyMatch(snapshot -> snapshot.playerId().equals(entry.getKey()));
+                if (!alreadyAdded) {
+                    snapshots.add(new CanvasSnapshot(entry.getKey(), entry.getValue()));
+                }
+            }
+
+            realtimePublisher.publishGameEvent(roomCode, new GameEvent.GalleryPhase(snapshots));
+
+            scheduleVotePhase(roomCode, gs);
+        }
+    }
+
+    private void scheduleVotePhase(String roomCode, GameState gs) {
+        int gallerySeconds = roomRepository.findById(roomCode)
+                .map(Room::getDrawTime)
+                .filter(d -> d != null && d > 0)
+                .orElse(30) / 2;
+
+        if (gallerySeconds < 5) {
+            gallerySeconds = 5;
+        }
+
+        ScheduledFuture<?> f = scheduler.schedule(() -> startVotePhase(roomCode), gallerySeconds, TimeUnit.SECONDS);
+        ScheduledFuture<?> prev = scheduledTasks.put(roomCode, f);
+        if (prev != null) prev.cancel(false);
+    }
+
+    private void startVotePhase(String roomCode) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+
+        synchronized (gs) {
+            gs.setPhase(GameState.Phase.VOTING);
+            gs.clearCanvasSnapshots();
+            realtimePublisher.publishGameEvent(roomCode, new GameEvent.VotePhase(30));
         }
     }
 }

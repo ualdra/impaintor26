@@ -26,6 +26,9 @@ public class GameState {
     // Mapa de votos: voterId -> votedPlayerId
     private final Map<Long, Long> votes = new ConcurrentHashMap<>();
 
+    // Capturas de canvas por jugador para la ronda actual: playerId -> dataURL
+    private final Map<Long, String> canvasSnapshots = new ConcurrentHashMap<>();
+
     // Id del impostor
     private Long impostorId;
 
@@ -72,6 +75,13 @@ public class GameState {
 
     public Map<Long, Long> getVotes() { return Collections.unmodifiableMap(votes); }
     public void clearVotes() { votes.clear(); }
+
+    public Map<Long, String> getCanvasSnapshots() { return Collections.unmodifiableMap(canvasSnapshots); }
+    public void recordCanvasSnapshot(Long playerId, String dataUrl) {
+        if (playerId == null || dataUrl == null || dataUrl.isBlank()) return;
+        canvasSnapshots.put(playerId, dataUrl);
+    }
+    public void clearCanvasSnapshots() { canvasSnapshots.clear(); }
 
     public Long getImpostorId() { return impostorId; }
     public void setImpostorId(Long impostorId) { this.impostorId = impostorId; }
