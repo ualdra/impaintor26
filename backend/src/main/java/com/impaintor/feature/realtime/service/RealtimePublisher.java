@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.impaintor.feature.realtime.dto.outbound.ClearCanvasBroadcast;
 import com.impaintor.feature.realtime.dto.outbound.GameEvent;
 import com.impaintor.feature.realtime.dto.outbound.GuessResult;
+import com.impaintor.feature.realtime.dto.outbound.MatchFoundNotification;
 import com.impaintor.feature.realtime.dto.outbound.RoleAssignment;
 import com.impaintor.feature.realtime.dto.outbound.StrokeBroadcast;
 
@@ -45,5 +46,9 @@ public class RealtimePublisher {
 
     public void sendGuessResult(Long userId, GuessResult result) {
         messaging.convertAndSendToUser(String.valueOf(userId), PRIVATE_QUEUE, result);
+    }
+
+    public void sendMatchFound(Long userId, MatchFoundNotification notification) {
+        messaging.convertAndSendToUser(String.valueOf(userId), PRIVATE_QUEUE, notification);
     }
 }
