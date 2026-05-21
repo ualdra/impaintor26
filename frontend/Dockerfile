@@ -1,9 +1,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN NODE_ENV=development npm install
+RUN npm install --include=dev
 COPY . .
-RUN npm run build
+RUN npx ng build
 
 FROM nginx:alpine AS runtime
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
