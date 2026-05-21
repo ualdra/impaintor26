@@ -1,5 +1,6 @@
 FROM node:20-alpine AS build
 WORKDIR /app
+RUN npm install -g @angular/cli@21
 COPY package*.json ./
 RUN NODE_ENV=development npm install
 COPY . .
