@@ -1,5 +1,38 @@
-<div class="phase-placeholder" data-testid="vote-result-phase">
-  <h2>Fase: RESULT</h2>
-  <p><em>PLACEHOLDER — P3/P4 implementará el resultado de votación (sec 2I.6).</em></p>
-  <pre>{{ state | json }}</pre>
+<div class="vote-result-view" data-testid="vote-result-phase">
+  <header class="phase-header">
+    <h2>Resultado de votación — Ronda {{ state.round }}</h2>
+  </header>
+
+  @if (state.eliminated === null) {
+    <div class="no-elimination" data-testid="no-elimination">
+      <p>Nadie ha sido eliminado esta ronda.</p>
+    </div>
+  } @else {
+    <div class="elimination-result">
+      <p>
+        Jugador eliminado:
+        <strong data-testid="eliminated-player-id">{{ state.eliminated }}</strong>
+      </p>
+      @if (state.wasImpostorEliminated) {
+        <p class="impostor-reveal was-impostor" data-testid="was-impostor-message">
+          ¡Era el impostor!
+        </p>
+      } @else {
+        <p class="impostor-reveal not-impostor" data-testid="not-impostor-message">
+          No era el impostor.
+        </p>
+      }
+    </div>
+  }
+
+  <div class="top-voted-section">
+    <h3>Más votados</h3>
+    <ul class="top-voted-list" data-testid="top-voted-list">
+      @for (entry of state.topVoted; track entry.id) {
+        <li [attr.data-testid]="'top-voted-entry-' + entry.id">
+          Jugador {{ entry.id }} — {{ entry.votes }} voto(s)
+        </li>
+      }
+    </ul>
+  </div>
 </div>

@@ -1,5 +1,21 @@
-<div class="phase-placeholder" data-testid="gallery-phase">
-  <h2>Fase: GALLERY</h2>
-  <p><em>PLACEHOLDER — P3/P4 implementará la cuadrícula de canvas (sec 2I.3).</em></p>
-  <pre>{{ state | json }}</pre>
+<div class="gallery-view" data-testid="gallery-phase">
+  <header class="phase-header">
+    <h2>Galería — Ronda {{ state.round }}</h2>
+    <div class="timer" data-testid="timer">⏱ {{ state.timeRemainingSec }}s</div>
+  </header>
+
+  <p class="instructions">Observa los dibujos de esta ronda. ¡La votación comenzará pronto!</p>
+
+  <div class="gallery-grid">
+    @for (id of drawers(); track id) {
+      <div class="gallery-card" [attr.data-testid]="'gallery-card-' + id">
+        <div class="player-label">Jugador {{ id }}</div>
+        @if (snapshotFor(id); as src) {
+          <img [src]="src" alt="Dibujo del jugador {{ id }}" class="gallery-thumb" />
+        } @else {
+          <div class="no-drawing">(sin dibujo)</div>
+        }
+      </div>
+    }
+  </div>
 </div>

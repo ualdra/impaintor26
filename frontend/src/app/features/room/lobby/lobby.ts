@@ -2,6 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { WebSocketService } from '../../../core/services/websocket.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { GameBackgroundComponent } from '../../../shared/components/game-background/game-background.component';
 import { RoomConfig } from '../../../core/services/room.service';
@@ -23,6 +24,7 @@ export class Lobby implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly wsService = inject(WebSocketService);
+  private readonly authService = inject(AuthService);
   
   roomCode = this.route.snapshot.paramMap.get('code') || 'UNKNOWN';
   Math = Math;
@@ -35,44 +37,42 @@ export class Lobby implements OnInit, OnDestroy {
   private gameStartSub?: Subscription;
 
   ngOnInit() {
-    this.wsService.connect();
-    
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    this.wsService.connect({ url: '/ws', jwt: token });
+
     // Suscribirse a los cambios en el lobby
-    this.wsSubscription = this.wsService.subscribe(`/topic/room.${this.roomCode}.lobby`).subscribe({
-      next: (msg) => {
-        try {
-          const data = JSON.parse(msg.body);
+    this.wsSubscription = this.wsService
+      .subscribe<{ players?: Player[]; config?: RoomConfig }>(`/topic/room.${this.roomCode}.lobby`)
+      .subscribe({
+        next: (data) => {
           if (data.players) this.players.set(data.players);
           if (data.config) this.roomConfig.set(data.config);
-          
+
           const currentUsername = localStorage.getItem('username') || 'Jugador Local';
           const hostPlayer = this.players().find(p => p.isHost);
           if (hostPlayer && hostPlayer.username === currentUsername) {
             this.isHost.set(true);
           }
-        } catch(e) {
-          console.error("Error parsing lobby update", e);
-        }
-      }
-    });
+        },
+      });
 
     // Suscribirse a eventos de juego para detectar el "START"
-    this.gameStartSub = this.wsService.subscribe(`/topic/room.${this.roomCode}.game`).subscribe({
-      next: (msg) => {
-         try {
-           const data = JSON.parse(msg.body);
-           if (data.type === 'GAME_START') {
-             this.router.navigate(['/room', this.roomCode, 'game']);
-           }
-         } catch(e) {}
-      }
-    });
-
+    this.gameStartSub = this.wsService
+      .subscribe<{ type: string }>(`/topic/room.${this.roomCode}.game`)
+      .subscribe({
+        next: (data) => {
+          if (data.type === 'GAME_START') {
+            this.router.navigate(['/room', this.roomCode, 'game']);
+          }
+        },
+      });
   }
 
   startGame() {
     if (this.isHost()) {
-      this.wsService.publish(`/app/room.${this.roomCode}.start`, {});
+      this.wsService.send(`/app/room.${this.roomCode}.start`, {});
     }
   }
 

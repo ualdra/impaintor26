@@ -5,7 +5,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { GameStateService } from '../../services/game-state';
 import { MockGameEventEmitter } from '../../services/mock-game-event-emitter';
 import { SpectatorCanvasService } from '../../services/spectator-canvas';
-import { StompClientService } from '../../../realtime/services/stomp-client';
+import { WebSocketService } from '../../../../core/services/websocket.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { DrawingPhaseView } from '../../components/drawing-phase-view/drawing-phase-view';
 import { GalleryView } from '../../components/gallery-view/gallery-view';
 import { VotingView } from '../../components/voting-view/voting-view';
@@ -14,7 +15,6 @@ import { VoteResultView } from '../../components/vote-result-view/vote-result-vi
 import { GameOverView } from '../../components/game-over-view/game-over-view';
 import { DrawBroadcast, DrawCommand, GameEvent } from '../../models/game-event';
 import { RoleAssignment } from '../../models/role-assignment';
-import { getStoredToken } from '../../../../core/auth/token';
 
 /**
  * Container raíz del flujo del juego (Track I, 2I.1).
@@ -45,29 +45,26 @@ import { getStoredToken } from '../../../../core/auth/token';
 export class GameComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly stomp = inject(StompClientService);
+  private readonly ws = inject(WebSocketService);
+  private readonly authService = inject(AuthService);
   private readonly mock = inject(MockGameEventEmitter);
   readonly gameState = inject(GameStateService);
   // Inyectado para que el servicio se construya y se subscriba a gameEvents$
   // (reset automático en GAME_START / NEW_ROUND). Se pasa via DI a las vistas.
   private readonly spectator = inject(SpectatorCanvasService);
 
-  /** JWT crudo de localStorage. PENDING — Track E lo reemplazará con AuthService.getToken().
-   *  Se lee como field initializer (contexto de inyección válido). */
-  private readonly storedToken = getStoredToken();
-
   /** Id del jugador local. PENDING — Track E lo extraerá del JWT decodificado.
    *  En modo dev hardcoded a 42 (coincide con el guion de MockGameEventEmitter). */
   protected myPlayerId: number | null = null;
 
-  /** True si no se conecta a Stomp (sin token y sin ?dev=true). */
+  /** True si no se conecta a WebSocket (sin token y sin ?dev=true). */
   notAuthenticated = false;
 
   /** True si estamos usando el emitter mock (modo dev). */
   devMode = false;
 
   private readonly destroy$ = new Subject<void>();
-  private connectedToStomp = false;
+  private connectedToWs = false;
 
   ngOnInit(): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
@@ -82,20 +79,21 @@ export class GameComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.storedToken) {
+    const token = this.authService.getToken();
+    if (!token) {
       this.notAuthenticated = true;
       return;
     }
 
-    this.connectStomp(code, this.storedToken);
+    this.connectWebSocket(code, token);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.mock.cancel();
-    if (this.connectedToStomp) {
-      this.stomp.disconnect();
+    if (this.connectedToWs) {
+      this.ws.disconnect();
     }
     this.gameState.reset();
   }
@@ -113,21 +111,21 @@ export class GameComponent implements OnInit, OnDestroy {
       .subscribe((role: RoleAssignment) => this.gameState.applyRoleAssignment(role));
   }
 
-  private connectStomp(code: string, token: string): void {
-    this.stomp.connect({ url: '/ws', jwt: token });
-    this.connectedToStomp = true;
+  private connectWebSocket(code: string, token: string): void {
+    this.ws.connect({ url: '/ws', jwt: token });
+    this.connectedToWs = true;
 
-    this.stomp
+    this.ws
       .subscribe<GameEvent>(`/topic/room.${code}.game`)
       .pipe(takeUntil(this.destroy$))
       .subscribe((ev) => this.gameState.applyEvent(ev));
 
-    this.stomp
+    this.ws
       .subscribe<DrawBroadcast>(`/topic/room.${code}.draw`)
       .pipe(takeUntil(this.destroy$))
       .subscribe((broadcast) => this.spectator.replayBroadcast(broadcast));
 
-    this.stomp
+    this.ws
       .subscribe<RoleAssignment>('/user/queue/private')
       .pipe(takeUntil(this.destroy$))
       .subscribe((msg) => {
@@ -145,19 +143,26 @@ export class GameComponent implements OnInit, OnDestroy {
    */
   protected sendDraw(cmd: DrawCommand): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
-    this.stomp.send(`/app/room.${code}.draw`, cmd);
+    this.ws.send(`/app/room.${code}.draw`, cmd);
   }
 
   /** Envía el voto al servidor. Invocado por VotingView. */
   protected sendVote(votedPlayerId: number): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
-    this.stomp.send(`/app/room.${code}.vote`, { votedPlayerId });
+    this.ws.send(`/app/room.${code}.vote`, { votedPlayerId });
+  }
+
+  /** Envía el desempate del impostor al servidor. Invocado por TieBreakView.
+   *  TODO: confirmar path STOMP con Track H. */
+  protected sendVoteMove(votedPlayerId: number): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.ws.send(`/app/room.${code}.vote-move`, { votedPlayerId });
   }
 
   /** Envía un intento de adivinación. Invocado por DrawingPhaseView (fallback impostor). */
   protected sendGuess(guess: string): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
-    this.stomp.send(`/app/room.${code}.guess`, { guess });
+    this.ws.send(`/app/room.${code}.guess`, { guess });
   }
 
   /**

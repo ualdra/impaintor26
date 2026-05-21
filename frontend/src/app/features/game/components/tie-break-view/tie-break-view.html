@@ -1,5 +1,33 @@
-<div class="phase-placeholder" data-testid="tie-break-phase">
-  <h2>Fase: TIE_BREAK</h2>
-  <p><em>PLACEHOLDER — P3/P4 implementará el desempate (sec 2I.5).</em></p>
-  <pre>{{ state | json }}</pre>
+<div class="tie-break-view" data-testid="tie-break-phase">
+  <header class="phase-header">
+    <h2>Empate — Ronda {{ state.round }}</h2>
+    <div class="timer" data-testid="timer">⏱ {{ state.timeRemainingSec }}s</div>
+  </header>
+
+  @if (isImpostor()) {
+    <p class="prompt impostor-prompt" data-testid="impostor-prompt">
+      Mueve tu voto para romper el empate.
+    </p>
+  } @else {
+    <p class="prompt waiting-prompt" data-testid="waiting-prompt">
+      Esperando al impostor…
+    </p>
+  }
+
+  <div class="tied-players">
+    @for (entry of state.tiedPlayers; track entry.id) {
+      <button
+        class="tied-card tied"
+        [class.voted]="myMove() === entry.id"
+        [attr.data-testid]="'tied-player-' + entry.id"
+        [disabled]="!isImpostor() || myMove() !== null"
+        (click)="onCardClick(entry.id)"
+      >
+        Jugador {{ entry.id }} — {{ entry.votes }} voto(s)
+        @if (myMove() === entry.id) {
+          <span class="move-marker"> ✓</span>
+        }
+      </button>
+    }
+  </div>
 </div>

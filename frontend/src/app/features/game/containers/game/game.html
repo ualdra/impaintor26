@@ -32,7 +32,11 @@
       />
     }
     @case ('TIE_BREAK') {
-      <app-tie-break-view [state]="gameState.state()" />
+      <app-tie-break-view
+        [state]="gameState.state()"
+        [myPlayerId]="myPlayerId"
+        (voteMoved)="sendVoteMove($event)"
+      />
     }
     @case ('RESULT') {
       <app-vote-result-view [state]="gameState.state()" />

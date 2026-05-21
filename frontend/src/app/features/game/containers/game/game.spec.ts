@@ -1,19 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of } from 'rxjs';
+import { Subject, of } from 'rxjs';
 
 import { GameComponent } from './game';
 import { GameStateService } from '../../services/game-state';
 import { MockGameEventEmitter } from '../../services/mock-game-event-emitter';
-import { StompClientService } from '../../../realtime/services/stomp-client';
+import { WebSocketService } from '../../../../core/services/websocket.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 describe('GameComponent', () => {
   let mockEmitter: MockGameEventEmitter;
-  let stompMock: { connect: any; subscribe: any; send: any; disconnect: any; status$: any };
+  let wsMock: { connect: any; subscribe: any; send: any; disconnect: any; status$: any };
+  let authMock: { getToken: any };
 
   function configure(devMode: boolean, code = 'TEST') {
-    stompMock = {
+    wsMock = {
       connect: vi.fn(),
       subscribe: vi.fn().mockReturnValue(of()),
       send: vi.fn(),
@@ -21,12 +23,17 @@ describe('GameComponent', () => {
       status$: of('IDLE'),
     };
 
+    authMock = {
+      getToken: vi.fn().mockReturnValue(null),
+    };
+
     TestBed.configureTestingModule({
       imports: [GameComponent],
       providers: [
         GameStateService,
         MockGameEventEmitter,
-        { provide: StompClientService, useValue: stompMock },
+        { provide: WebSocketService, useValue: wsMock },
+        { provide: AuthService, useValue: authMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -118,20 +125,51 @@ describe('GameComponent', () => {
 
   it('en modo no-dev sin token, muestra mensaje de no autenticado', () => {
     configure(false);
+    // authMock.getToken devuelve null por defecto
     const fixture = TestBed.createComponent(GameComponent);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     expect(root.textContent).toContain('No autenticado');
-    expect(stompMock.connect).not.toHaveBeenCalled();
+    expect(wsMock.connect).not.toHaveBeenCalled();
   });
 
-  it('ngOnDestroy invoca disconnect cuando se conectó por stomp', () => {
+  it('ngOnDestroy invoca disconnect cuando se conectó por WebSocket', () => {
     configure(false);
-    // Simulamos token presente vía Storage.prototype.
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('fake-token');
+    authMock.getToken.mockReturnValue('fake-token');
     const fixture = TestBed.createComponent(GameComponent);
     fixture.detectChanges();
     fixture.destroy();
-    expect(stompMock.disconnect).toHaveBeenCalled();
+    expect(wsMock.disconnect).toHaveBeenCalled();
+  });
+
+  it('TieBreakView voteMoved llama ws.send con la ruta y payload correctos', () => {
+    configure(false, 'SALA');
+    authMock.getToken.mockReturnValue('fake-token');
+
+    const gameEvents$ = new Subject<any>();
+    const privateEvents$ = new Subject<any>();
+    wsMock.subscribe = vi.fn().mockImplementation((topic: string) => {
+      if (topic.endsWith('.game')) return gameEvents$.asObservable();
+      if (topic === '/user/queue/private') return privateEvents$.asObservable();
+      return of();
+    });
+
+    const fixture = TestBed.createComponent(GameComponent);
+    fixture.detectChanges();
+
+    privateEvents$.next({ type: 'ROLE_ASSIGNMENT', role: 'IMPOSTOR', hint: 'piano', lives: 1 });
+    gameEvents$.next({
+      type: 'VOTE_TIE',
+      tiedPlayers: [{ id: 7, votes: 2 }, { id: 13, votes: 2 }],
+      timeSeconds: 15,
+    });
+    fixture.detectChanges();
+
+    const card = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="tied-player-7"]',
+    ) as HTMLButtonElement;
+    card.click();
+
+    expect(wsMock.send).toHaveBeenCalledWith('/app/room.SALA.vote-move', { votedPlayerId: 7 });
   });
 });
