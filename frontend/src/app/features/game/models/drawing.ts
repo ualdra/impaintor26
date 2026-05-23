@@ -6,6 +6,8 @@ export interface Point {
 export interface DrawingStroke {
   type: 'STROKE' | 'CLEAR';
   playerId?: number;
+  strokeId?: string;   // ID único por trazo (de mousedown a mouseup)
+  isLast?: boolean;    // true en el último segmento del trazo
   points: Point[];
   color: string;
   thickness: number;
@@ -14,7 +16,7 @@ export interface DrawingStroke {
 
 export interface CanvasState {
   strokes: DrawingStroke[];
-  imageData: string | null;
+  snapshots: Map<number, string>; // playerId → dataUrl
 }
 
 export type BrushTool = 'pen' | 'eraser';
@@ -24,5 +26,3 @@ export interface BrushConfig {
   thickness: number;
   tool: BrushTool;
 }
-
-/* hola */

@@ -16,7 +16,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
   @Input() isActive = true; // Si es mi turno o estoy viendo
   @Input() showWord = ''; // Palabra a dibujar (para pintores)
-
+  @Input() playerId = 0;
   private destroy$ = new Subject<void>();
   private engine?: DrawingEngine;
   
@@ -55,11 +55,11 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       this.engine.setConfig(this.brushConfig);
     }
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+ngOnDestroy(): void {
+  this.engine?.destroy();
+  this.destroy$.next();
+  this.destroy$.complete();
+}
 
   private subscribeToConfig(): void {
     this.canvasService.getBrushConfig()
@@ -132,8 +132,8 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ===== UTILIDADES =====
 
-  saveSnapshot(): void {
-    const dataUrl = this.canvasRef.nativeElement.toDataURL('image/png');
-    this.canvasService.saveCanvasImage(dataUrl);
-  }
+ saveSnapshot(): void {
+  const dataUrl = this.canvasRef.nativeElement.toDataURL('image/png');
+  this.canvasService.saveCanvasImage(this.playerId, dataUrl);
+}
 }
