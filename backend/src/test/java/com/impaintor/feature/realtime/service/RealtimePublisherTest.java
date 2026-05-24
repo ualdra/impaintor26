@@ -58,7 +58,7 @@ class RealtimePublisherTest {
 
     @Test
     void publishGameEvent_routesAllGameEventVariants() {
-        publisher.publishGameEvent("R", new GameEvent.TurnStart(5L, 30));
+        publisher.publishGameEvent("R", new GameEvent.TurnStart(5L, 30, List.of(5L, 42L)));
         publisher.publishGameEvent("R", new GameEvent.TurnEnd(5L));
         publisher.publishGameEvent("R", new GameEvent.GalleryPhase());
         publisher.publishGameEvent("R", new GameEvent.VotePhase(30));
