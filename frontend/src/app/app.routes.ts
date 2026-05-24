@@ -27,7 +27,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/game/containers/game/game').then((m) => m.GameComponent),
   },
-  
+  {
+    path: 'matchmaking',
+    loadComponent: () =>
+      import('./features/matchmaking/matchmaking.component').then((m) => m.MatchmakingComponent),
+  },
+
   // Fallback
   { path: '**', redirectTo: '' }
 ];

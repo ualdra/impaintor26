@@ -81,3 +81,6 @@
   padding: 2rem;
   color: #999;
 }
+
+.reveal-row dd.elo-positive { color: #10b981; font-weight: 700; }
+.reveal-row dd.elo-negative { color: #ef4444; font-weight: 700; }

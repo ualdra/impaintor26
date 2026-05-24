@@ -28,6 +28,16 @@
         <dt>Rondas jugadas</dt>
         <dd data-testid="rounds">{{ state.round }}</dd>
       </div>
+      @if (g.eloChange !== undefined) {
+        <div class="reveal-row">
+          <dt>Cambio de ELO</dt>
+          <dd data-testid="elo-change"
+              [class.elo-positive]="g.eloChange > 0"
+              [class.elo-negative]="g.eloChange < 0">
+            {{ g.eloChange > 0 ? '+' : '' }}{{ g.eloChange }}
+          </dd>
+        </div>
+      }
     </dl>
 
     <button class="play-again" data-testid="play-again" (click)="playAgain.emit()">
