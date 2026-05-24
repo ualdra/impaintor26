@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter, take } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 import { WebSocketService } from '../../core/services/websocket.service';
@@ -59,8 +60,14 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
       });
     this.subs.add(wsSub);
 
-    this.joinAndStart();
-    this.startPolling();
+    const connSub = this.wsService.status$.pipe(
+      filter((s) => s === 'CONNECTED'),
+      take(1),
+    ).subscribe(() => {
+      this.joinAndStart();
+      this.startPolling();
+    });
+    this.subs.add(connSub);
   }
 
   private joinAndStart(): void {

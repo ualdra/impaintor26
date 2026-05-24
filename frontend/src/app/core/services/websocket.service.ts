@@ -66,8 +66,8 @@ export class WebSocketService {
     });
 
     this.client.onConnect = (_frame: IFrame) => {
-      this._status$.next('CONNECTED');
       this.flushPendingSubs();
+      this._status$.next('CONNECTED');
     };
 
     this.client.onStompError = (frame: IFrame) => {
