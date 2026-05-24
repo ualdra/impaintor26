@@ -32,6 +32,8 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
   private matchFound = false;
   private subs = new Subscription();
   private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private tickInterval: ReturnType<typeof setInterval> | null = null;
+  private localJoinedAt: number | null = null;
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
@@ -50,27 +52,54 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
       .subscribe((msg) => {
         if (msg.type === 'MATCH_FOUND') {
           this.matchFound = true;
+          this.stopTick();
           this.stopPolling();
           this.router.navigate(['/room', msg.roomCode, 'lobby']);
         }
       });
     this.subs.add(wsSub);
 
+    this.joinAndStart();
+    this.startPolling();
+  }
+
+  private joinAndStart(): void {
+    this.stopTick();
     this.matchmakingService.joinQueue().subscribe({
       next: (status) => {
-        this.waitSeconds.set(status.waitSeconds);
+        this.error.set(null);
         this.searchRange.set(status.searchRange);
-        this.startPolling();
+        this.localJoinedAt = Date.now() - status.waitSeconds * 1000;
+        this.startTick();
       },
       error: () => this.error.set('No se pudo unir a la cola. Inténtalo de nuevo.'),
     });
+  }
+
+  private startTick(): void {
+    this.tickInterval = setInterval(() => {
+      if (this.localJoinedAt !== null) {
+        this.waitSeconds.set(Math.floor((Date.now() - this.localJoinedAt) / 1000));
+      }
+    }, 1000);
+  }
+
+  private stopTick(): void {
+    if (this.tickInterval !== null) {
+      clearInterval(this.tickInterval);
+      this.tickInterval = null;
+    }
   }
 
   private startPolling(): void {
     this.pollInterval = setInterval(() => {
       const pollSub = this.matchmakingService.getStatus().subscribe({
         next: (status) => {
-          this.waitSeconds.set(status.waitSeconds);
+          if (!status.queued && !this.matchFound) {
+            // Kicked from queue (e.g. WebSocket reconnect or failed room creation); silently re-join.
+            this.joinAndStart();
+            return;
+          }
           this.searchRange.set(status.searchRange);
         },
       });
@@ -87,9 +116,14 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     this.matchFound = true;
+    this.stopTick();
     this.stopPolling();
     this.matchmakingService.leaveQueue().subscribe();
     this.router.navigate(['/main_menu']);
+  }
+
+  lowerElo(): number {
+    return Math.max(0, this.myElo() - this.searchRange());
   }
 
   formatTime(seconds: number): string {
@@ -99,6 +133,7 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopTick();
     this.stopPolling();
     this.subs.unsubscribe();
     if (!this.matchFound) {

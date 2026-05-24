@@ -13,7 +13,7 @@ import com.impaintor.feature.wordgroup.models.WordGroup;
 public class Room {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(name = "room_code", nullable = false, unique = true, length = 12)
