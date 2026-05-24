@@ -103,6 +103,7 @@ export class GameStateService {
             reason: e.reason,
             impostorId: e.impostorId,
             secretWord: e.secretWord,
+            eloChange: e.eloChange,
           },
         };
       default: {

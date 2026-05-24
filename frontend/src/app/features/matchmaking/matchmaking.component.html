@@ -1,0 +1,44 @@
+<div class="matchmaking-page">
+  <div class="matchmaking-card">
+
+    <header class="card-header">
+      <span class="title-icon" aria-hidden="true">⚔️</span>
+      <h1 class="card-title">Reto del Profesor</h1>
+      <p class="card-subtitle">Partida Competitiva — 5 jugadores</p>
+    </header>
+
+    @if (error()) {
+      <div class="error-banner" role="alert">{{ error() }}</div>
+    } @else {
+      <div class="radar-container" aria-label="Buscando partida" aria-live="polite">
+        <div class="radar-ring ring-1"></div>
+        <div class="radar-ring ring-2"></div>
+        <div class="radar-ring ring-3"></div>
+        <div class="radar-center">
+          <span class="elo-label">ELO</span>
+          <span class="elo-value">{{ myElo() }}</span>
+        </div>
+      </div>
+
+      <div class="status-section">
+        <div class="status-row">
+          <span class="status-icon" aria-hidden="true">🕐</span>
+          <span class="status-text">{{ formatTime(waitSeconds()) }}</span>
+        </div>
+        <div class="status-row">
+          <span class="status-icon" aria-hidden="true">🎯</span>
+          <span class="status-text">
+            Buscando ELO {{ myElo() - searchRange() }}&nbsp;–&nbsp;{{ myElo() + searchRange() }}
+          </span>
+        </div>
+      </div>
+    }
+
+    <footer class="card-footer">
+      <button class="btn-cancel" (click)="cancel()" type="button">
+        Cancelar búsqueda
+      </button>
+    </footer>
+
+  </div>
+</div>

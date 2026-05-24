@@ -1,0 +1,227 @@
+/* ================================================================
+   MatchmakingComponent — Cola de Partida Competitiva (Estilo Rústico)
+   ================================================================ */
+
+.matchmaking-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #1a0e05;
+  font-family: 'Nunito', sans-serif;
+  color: #fdf5e6;
+}
+
+/* ---- Tarjeta principal (mismo pergamino que home/lobby) ---- */
+.matchmaking-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2.5rem 2rem;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    linear-gradient(
+      160deg,
+      #2e1505 0%,
+      #3d1f08 30%,
+      #2a1203 70%,
+      #1e0c02 100%
+    );
+
+  border: 2px solid #5c3a1e;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 4px #1a0e05,
+    0 0 0 6px #3d2208,
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 200, 100, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.matchmaking-card::before,
+.matchmaking-card::after {
+  content: '✦';
+  position: absolute;
+  color: #5c3a1e;
+  font-size: 1.2rem;
+  top: 12px;
+}
+.matchmaking-card::before { left: 16px; }
+.matchmaking-card::after  { right: 16px; }
+
+/* ---- Cabecera ---- */
+.card-header {
+  text-align: center;
+}
+
+.title-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.card-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  color: #c9a86c;
+  margin: 0 0 0.3rem 0;
+}
+
+.card-subtitle {
+  font-size: 0.82rem;
+  color: #7a5530;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 0;
+}
+
+/* ---- Radar (3 anillos que se expanden desde el centro) ---- */
+.radar-container {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-ring {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border: 2px solid #c9a86c;
+  border-radius: 50%;
+  animation: radar-pulse 2.4s ease-out infinite;
+  opacity: 0;
+}
+
+.ring-1 { animation-delay: 0s; }
+.ring-2 { animation-delay: 0.8s; }
+.ring-3 { animation-delay: 1.6s; }
+
+@keyframes radar-pulse {
+  0%   { transform: scale(1);   opacity: 0.65; }
+  100% { transform: scale(2.8); opacity: 0;    }
+}
+
+.radar-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(201, 168, 108, 0.1);
+  border: 2px solid #c9a86c;
+  box-shadow:
+    0 0 18px rgba(201, 168, 108, 0.25),
+    inset 0 1px 0 rgba(255, 205, 120, 0.12);
+}
+
+.elo-label {
+  font-size: 0.6rem;
+  color: #c9a86c;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.elo-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+/* ---- Estado (tiempo y rango) ---- */
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.status-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.status-text {
+  font-size: 0.95rem;
+  color: #f5e6c8;
+}
+
+/* ---- Error ---- */
+.error-banner {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  color: #e74c3c;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+}
+
+/* ---- Footer / botón cancelar ---- */
+.card-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #3d2208;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #c9a86c;
+  border: 1px solid #5c3a1e;
+  padding: 0.75rem 2rem;
+  border-radius: 4px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-cancel:hover {
+  background: rgba(201, 168, 108, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-cancel:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .matchmaking-card {
+    padding: 2rem 1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}

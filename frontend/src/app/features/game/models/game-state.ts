@@ -15,6 +15,8 @@ export interface GameOverInfo {
   reason: EndReason;
   impostorId: number;
   secretWord: string;
+  /** ELO delta for this player. Only present in ranked games once 3J.5 is wired up. */
+  eloChange?: number;
 }
 
 /**

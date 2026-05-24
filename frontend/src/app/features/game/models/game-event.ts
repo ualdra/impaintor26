@@ -27,7 +27,7 @@ export type GameEvent =
   | { type: 'VOTE_TIE'; tiedPlayers: TopVote[]; timeSeconds: number }
   | { type: 'GUESS_ATTEMPT'; livesRemaining: number; correct: boolean }
   | { type: 'NEW_ROUND'; round: number; drawingOrder: number[] }
-  | { type: 'GAME_OVER'; winner: Winner; reason: EndReason; impostorId: number; secretWord: string };
+  | { type: 'GAME_OVER'; winner: Winner; reason: EndReason; impostorId: number; secretWord: string; eloChange?: number };
 
 /** Strokes y limpiezas que el servidor reenvía a /topic/room.{code}.draw. */
 export interface StrokeBroadcast {
