@@ -1,5 +1,5 @@
 package com.impaintor.feature.room.controller;
-//Commit
+
 import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.service.GameService;
 import com.impaintor.feature.room.models.Room;
@@ -24,48 +24,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("api/rooms")
-public class RoomController{
+public class RoomController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-    
-    @Autowired 
+
+    @Autowired
     private RoomRepository roomRepository;
 
     @Autowired
     private GameService gameService;
 
     @PostMapping("/create")
-    public Room createRoom() {
+    public ResponseEntity<?> createRoom() {
         Room room = new Room();
-        
+
         Long seed = RandomGenerations.RoomRandomId();
         String codigoFinal = RandomGenerations.CodifyRoomId(seed);
-        
-        room.setId(codigoFinal);
-        
-        return roomRepository.save(room);
+
+        room.setRoomCode(codigoFinal);
+        room.setMode(Room.Mode.CUSTOM);
+        room.setGameState(Room.GameState.WAITING);
+
+        Room saved = roomRepository.save(room);
+        return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/{code}/join")
-    public ResponseEntity<?> joinRoom(@PathVariable String code, @RequestBody User user){  
-        Optional<Room> oRoom = roomRepository.findById(code);
-        if(oRoom.isEmpty()){
+    public ResponseEntity<?> joinRoom(@PathVariable String code, @RequestBody User user) {
+        Optional<Room> oRoom = roomRepository.findByRoomCode(code);
+        if (oRoom.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Room room = oRoom.get();
 
-        if(room.getPlayersNames().contains(user)){
+        if (room.getPlayersNames().contains(user)) {
             return ResponseEntity.badRequest().body("El jugador ya está en la sala");
         }
 
-        // 2. Comprobar si la sala está llena (Añadida comprobación por si getSize() es nulo)
-        if(room.getSize() != null && room.getPlayersNames().size() >= room.getSize()){
+        if (room.getSize() != null && room.getPlayersNames().size() >= room.getSize()) {
             return ResponseEntity.badRequest().body("La sala está llena");
         }
 
-        // 3. Añadir jugador y guardar
         room.getPlayersNames().add(user);
         roomRepository.save(room);
 
@@ -75,33 +76,29 @@ public class RoomController{
     }
 
     @PostMapping("/{code}/leave")
-    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody User user){  
-        Optional<Room> oRoom = roomRepository.findById(code);
-        
-        // Es buena práctica comprobar si la sala existe antes de hacer .get()
-        if(oRoom.isEmpty()){
+    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody User user) {
+        Optional<Room> oRoom = roomRepository.findByRoomCode(code);
+
+        if (oRoom.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
+
         Room room = oRoom.get();
 
-        // 1. Comprobar si está en la sala
-        if(!room.getPlayersNames().contains(user)){
+        if (!room.getPlayersNames().contains(user)) {
             return ResponseEntity.badRequest().body("El jugador no está en la sala");
         }
 
-        // 2. Eliminar jugador y guardar
         room.getPlayersNames().remove(user);
         roomRepository.save(room);
-
 
         return ResponseEntity.ok().body("El jugador ha abandonado la partida");
     }
 
     @GetMapping("/{code}")
     public ResponseEntity<?> roomDetails(@PathVariable String code) {
-        Optional<Room> oRoom = roomRepository.findById(code);
-        
+        Optional<Room> oRoom = roomRepository.findByRoomCode(code);
+
         if (oRoom.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -111,8 +108,8 @@ public class RoomController{
 
     @PutMapping("/{code}/settings")
     public ResponseEntity<?> updateSettings(@PathVariable String code, @RequestBody Room settingsUpdate) {
-        Optional<Room> oRoom = roomRepository.findById(code);
-        
+        Optional<Room> oRoom = roomRepository.findByRoomCode(code);
+
         if (oRoom.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -121,7 +118,7 @@ public class RoomController{
 
         if (settingsUpdate.getImpostorTries() != null) room.setImpostorTries(settingsUpdate.getImpostorTries());
         if (settingsUpdate.getDrawTime() != null) room.setDrawTime(settingsUpdate.getDrawTime());
-                
+
         Room savedRoom = roomRepository.save(room);
         return ResponseEntity.ok(savedRoom);
     }
