@@ -85,6 +85,9 @@ export class GameComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const user = this.authService.getCurrentUser();
+    if (user) this.myPlayerId = user.id;
+
     this.connectWebSocket(code, token);
   }
 
