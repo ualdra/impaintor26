@@ -4,6 +4,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.impaintor.feature.realtime.dto.outbound.ClearCanvasBroadcast;
+import com.impaintor.feature.realtime.dto.outbound.EloUpdate;
 import com.impaintor.feature.realtime.dto.outbound.GameEvent;
 import com.impaintor.feature.realtime.dto.outbound.GuessResult;
 import com.impaintor.feature.realtime.dto.outbound.MatchFoundNotification;
@@ -50,5 +51,9 @@ public class RealtimePublisher {
 
     public void sendMatchFound(Long userId, MatchFoundNotification notification) {
         messaging.convertAndSendToUser(String.valueOf(userId), PRIVATE_QUEUE, notification);
+    }
+
+    public void sendEloUpdate(Long userId, int eloChange) {
+        messaging.convertAndSendToUser(String.valueOf(userId), PRIVATE_QUEUE, new EloUpdate(eloChange));
     }
 }

@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.model.GalleryPhaseEvent;
+import com.impaintor.feature.game.service.GameEndService;
 import com.impaintor.feature.realtime.dto.outbound.RoleAssignment;
 import com.impaintor.feature.realtime.service.RealtimePublisher;
 import com.impaintor.feature.room.models.Room;
@@ -39,6 +40,7 @@ class GameServiceTest {
     private WordGroupRepository wordGroupRepository;
     private RealtimePublisher realtimePublisher;
     private SimpMessagingTemplate messagingTemplate;
+    private GameEndService gameEndService;
     private ScheduledExecutorService scheduler;
     @SuppressWarnings("rawtypes")
     private ScheduledFuture scheduledFuture;
@@ -50,10 +52,11 @@ class GameServiceTest {
         wordGroupRepository = mock(WordGroupRepository.class);
         realtimePublisher = mock(RealtimePublisher.class);
         messagingTemplate = mock(SimpMessagingTemplate.class);
+        gameEndService = mock(GameEndService.class);
         scheduler = mock(ScheduledExecutorService.class);
         scheduledFuture = mock(ScheduledFuture.class);
 
-        service = new GameService(roomRepository, wordGroupRepository, realtimePublisher, messagingTemplate);
+        service = new GameService(roomRepository, wordGroupRepository, realtimePublisher, messagingTemplate, gameEndService);
         ReflectionTestUtils.setField(service, "scheduler", scheduler);
     }
 
@@ -62,7 +65,7 @@ class GameServiceTest {
         Room room = roomWithPlayersAndTiming(30, 0);
         WordGroup wordGroup = new WordGroup("guitarra", "piano", "violonchelo", "manual", "es");
 
-        when(roomRepository.findById(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
@@ -104,7 +107,7 @@ class GameServiceTest {
                 .orElseThrow();
         assertThat(impostorAssignment.type()).isEqualTo("ROLE_ASSIGNMENT");
         assertThat(impostorAssignment.role()).isEqualTo("IMPOSTOR");
-        assertThat(impostorAssignment.lives()).isEqualTo(0);
+        assertThat(impostorAssignment.lives()).isEqualTo(1);
     }
 
     @Test
@@ -112,7 +115,7 @@ class GameServiceTest {
         Room room = roomWithPlayersAndTiming(30, 0);
         WordGroup wordGroup = new WordGroup("guitarra", "piano", "violonchelo", "manual", "es");
 
-        when(roomRepository.findById(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
@@ -133,7 +136,7 @@ class GameServiceTest {
         Room room = roomWithPlayersAndTiming(30, 0);
         WordGroup wordGroup = new WordGroup("guitarra", "piano", "violonchelo", "manual", "es");
 
-        when(roomRepository.findById(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
@@ -168,7 +171,7 @@ class GameServiceTest {
         Room room = roomWithPlayersAndTiming(30, 0);
         WordGroup wordGroup = new WordGroup("guitarra", "piano", "violonchelo", "manual", "es");
 
-        when(roomRepository.findById(ROOM_CODE)).thenReturn(Optional.of(room));
+        when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);

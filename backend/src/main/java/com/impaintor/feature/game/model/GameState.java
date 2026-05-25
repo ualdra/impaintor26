@@ -1,6 +1,11 @@
 package com.impaintor.feature.game.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.impaintor.feature.wordgroup.models.WordGroup;
@@ -47,6 +52,9 @@ public class GameState {
     // Duración de la fase de galería en segundos (configurable por sala al iniciar la partida).
     // Si es 0 indica que no se configuró y debe usarse el valor por defecto desde el servicio.
     private int gallerySeconds = 0;
+
+    // Vidas del impostor para adivinar la palabra
+    private int impostorLives = 0;
 
     // Índice del dibujante actual dentro de drawingOrder
     private int currentDrawerIndex = 0;

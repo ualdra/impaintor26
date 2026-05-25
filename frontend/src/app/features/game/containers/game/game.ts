@@ -15,7 +15,7 @@ import { VoteResultView } from '../../components/vote-result-view/vote-result-vi
 import { GameOverView } from '../../components/game-over-view/game-over-view';
 import { ImpostorOverlay } from '../../components/impostor-overlay/impostor-overlay';
 import { DrawBroadcast, DrawCommand, GameEvent } from '../../models/game-event';
-import { RoleAssignment } from '../../models/role-assignment';
+import { PrivateMessage, RoleAssignment } from '../../models/role-assignment';
 import { AudioService } from '../../../../core/services/audio.service';
 
 /**
@@ -209,13 +209,15 @@ export class GameComponent implements OnInit, OnDestroy {
       .subscribe((broadcast) => this.spectator.replayBroadcast(broadcast));
 
     this.ws
-      .subscribe<RoleAssignment>('/user/queue/private')
+      .subscribe<PrivateMessage>('/user/queue/private')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (msg) => {
-          console.log('[Game] private message received:', msg);
+          console.log('[Game] private message received:', msg.type, msg);
           if (msg.type === 'ROLE_ASSIGNMENT') {
-            this.gameState.applyRoleAssignment(msg);
+            this.gameState.applyRoleAssignment(msg as RoleAssignment);
+          } else if (msg.type === 'ELO_UPDATE') {
+            this.gameState.applyEloUpdate(msg.eloChange);
           }
         },
         error: (err) => console.error('[Game] private queue error:', err),

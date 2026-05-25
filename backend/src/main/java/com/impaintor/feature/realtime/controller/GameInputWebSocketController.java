@@ -48,4 +48,15 @@ public class GameInputWebSocketController {
         }
         handler.onGuess(code, impostorId, message.guess());
     }
+
+    @MessageMapping("/room.{code}.vote-move")
+    public void onVoteMove(@DestinationVariable String code,
+                           @Payload VoteMessage message,
+                           StompPrincipal principal) {
+        Long impostorId = principal.user().id();
+        if (!membership.isMember(code, impostorId)) {
+            return;
+        }
+        handler.onVoteMove(code, impostorId, message.votedPlayerId());
+    }
 }

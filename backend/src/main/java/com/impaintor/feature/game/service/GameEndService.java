@@ -3,11 +3,13 @@ package com.impaintor.feature.game.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.models.GamePlayerRecord;
 import com.impaintor.feature.game.models.GameRecord;
-import com.impaintor.feature.game.models.GameState;
 import com.impaintor.feature.game.repository.GamePlayerRecordRepository;
 import com.impaintor.feature.game.repository.GameRecordRepository;
 import com.impaintor.feature.room.models.Room;
@@ -33,19 +35,29 @@ public class GameEndService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Persists the game result, updates ELO for ranked games, and resets the room.
+     * Returns a map of userId → eloChange (0 for non-ranked games).
+     */
     @Transactional
-    public void handleGameEnd(Room room, GameState gameState, Room.WinningSide winningSide, Room.EndCondition endCondition) {
-        
+    public Map<Long, Integer> handleGameEnd(String roomCode, GameState gameState,
+                                            Room.WinningSide winningSide, Room.EndCondition endCondition) {
+
+        Room room = roomRepository.findByRoomCode(roomCode)
+                .orElseThrow(() -> new IllegalStateException("Room not found: " + roomCode));
+
+        Map<Long, Integer> eloChanges = new HashMap<>();
+
         // 1. Crear GameRecord
         GameRecord gameRecord = GameRecord.builder()
-                .roomCode(room.getRoomCode())
+                .roomCode(roomCode)
                 .mode(room.getMode())
-                .secretWord(room.getSecretWord())
+                .secretWord(gameState.getSecretWord())
                 .winningSide(winningSide)
                 .endCondition(endCondition)
                 .playedAt(LocalDateTime.now())
                 .build();
-        
+
         gameRecord = gameRecordRepository.save(gameRecord);
 
         // 2. Calcular Elos (Solo para RANKED)
@@ -79,47 +91,31 @@ public class GameEndService {
             if (room.getMode() == Room.Mode.RANKED) {
                 double eloP = isImpostor ? paintorsAvgElo : impostorElo;
                 double eloA = user.getElo() != null ? user.getElo() : 1000;
-                
+
                 double e = 1.0 / (1.0 + Math.pow(10.0, (eloP - eloA) / 400.0));
-                double difElo = isWinner ? (1.0 - e) : e;
-                double k = 0;
+                double k;
 
                 if (isImpostor) {
                     if (isWinner) {
-                        if (endCondition == Room.EndCondition.LAST_STANDING) {
-                            k = 50;
-                        } else {
-                            k = 30; // WORD_GUESSED or default
-                        }
+                        k = endCondition == Room.EndCondition.LAST_STANDING ? 50.0 : 30.0;
                     } else {
-                        if (endCondition == Room.EndCondition.VOTED_OUT) {
-                            k = -25;
-                        } else {
-                            k = -35; // OUT_OF_LIVES (failed word) or default
-                        }
+                        k = endCondition == Room.EndCondition.VOTED_OUT ? -25.0 : -35.0;
                     }
                 } else {
-                    // Paintor
                     if (isWinner) {
-                        if (gameState.getCurrentRound() < 4) {
-                            k = 30;
-                        } else {
-                            k = 20;
-                        }
+                        k = gameState.getRound() < 4 ? 30.0 : 20.0;
                     } else {
-                        if (endCondition == Room.EndCondition.WORD_GUESSED) {
-                            k = -20;
-                        } else {
-                            k = -40; // LAST_STANDING or default loss
-                        }
+                        k = endCondition == Room.EndCondition.WORD_GUESSED ? -20.0 : -40.0;
                     }
                 }
 
-                int rawEloChange = (int) Math.round(k * difElo);
+                int rawEloChange = (int) Math.round(k * (isWinner ? (1.0 - e) : e));
                 int newElo = Math.max(1000, (int) eloA + rawEloChange);
                 eloChange = newElo - (int) eloA;
                 user.setElo(newElo);
             }
+
+            eloChanges.put(user.getId(), eloChange);
 
             // Crear record de jugador
             GamePlayerRecord playerRecord = GamePlayerRecord.builder()
@@ -155,5 +151,7 @@ public class GameEndService {
         }
 
         roomRepository.save(room);
+
+        return eloChanges;
     }
 }

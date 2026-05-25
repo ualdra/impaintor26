@@ -15,5 +15,11 @@ export interface GuessResult {
   livesRemaining: number;
 }
 
+/** ELO delta sent privately to each player after a game ends. */
+export interface EloUpdate {
+  type: 'ELO_UPDATE';
+  eloChange: number;
+}
+
 /** Mensaje privado entrante en /user/queue/private — union de los anteriores. */
-export type PrivateMessage = RoleAssignment | GuessResult;
+export type PrivateMessage = RoleAssignment | GuessResult | EloUpdate;

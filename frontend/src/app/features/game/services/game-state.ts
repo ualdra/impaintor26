@@ -51,6 +51,12 @@ export class GameStateService {
     );
   }
 
+  applyEloUpdate(eloChange: number): void {
+    this._state.update((s) =>
+      s.gameOver ? { ...s, gameOver: { ...s.gameOver, eloChange } } : s,
+    );
+  }
+
   reset(): void {
     this._state.set(structuredClone(INITIAL_STATE));
   }

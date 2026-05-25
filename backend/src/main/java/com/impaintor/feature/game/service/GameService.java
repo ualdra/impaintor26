@@ -19,7 +19,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.model.GameState.CanvasSnapshot;
 import com.impaintor.feature.game.model.GalleryPhaseEvent;
+import com.impaintor.feature.realtime.dto.outbound.GuessResult;
 import com.impaintor.feature.realtime.dto.outbound.RoleAssignment;
+import com.impaintor.feature.realtime.service.GameInputHandler;
 import com.impaintor.feature.realtime.service.RealtimePublisher;
 import com.impaintor.feature.room.models.Room;
 import com.impaintor.feature.room.repository.RoomRepository;
@@ -32,7 +34,7 @@ import com.impaintor.feature.realtime.dto.outbound.GameEvent;
  * Inicializa y conserva el estado en memoria de una partida por sala.
  */
 @Service
-public class GameService {
+public class GameService implements GameInputHandler {
 
     private static final String GAME_TOPIC = "/topic/room.%s.game";
 
@@ -40,6 +42,7 @@ public class GameService {
     private final WordGroupRepository wordGroupRepository;
     private final RealtimePublisher realtimePublisher;
     private final SimpMessagingTemplate messagingTemplate;
+    private final GameEndService gameEndService;
 
     private final Map<String, GameState> activeGames = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
@@ -48,11 +51,13 @@ public class GameService {
     public GameService(RoomRepository roomRepository,
                        WordGroupRepository wordGroupRepository,
                        RealtimePublisher realtimePublisher,
-                       SimpMessagingTemplate messagingTemplate) {
+                       SimpMessagingTemplate messagingTemplate,
+                       GameEndService gameEndService) {
         this.roomRepository = roomRepository;
         this.wordGroupRepository = wordGroupRepository;
         this.realtimePublisher = realtimePublisher;
         this.messagingTemplate = messagingTemplate;
+        this.gameEndService = gameEndService;
     }
 
     @Transactional
@@ -89,6 +94,9 @@ public class GameService {
             drawingOrder.add(player.getId());
         }
 
+        int impostorLives = (room.getImpostorTries() != null && room.getImpostorTries() > 0)
+                ? room.getImpostorTries() : 1;
+
         GameState gameState = new GameState(drawingOrder, extractPlayerIds(players));
         gameState.setPhase(GameState.Phase.DRAWING);
         gameState.setRound(1);
@@ -96,6 +104,7 @@ public class GameService {
         gameState.setSecretWord(secretWord);
         gameState.setHintWord(hintWord);
         gameState.setImpostorId(impostor.getId());
+        gameState.setImpostorLives(impostorLives);
 
         activeGames.put(roomCode, gameState);
 
@@ -145,7 +154,7 @@ public class GameService {
             Long playerId = player.getId();
             if (playerId != null && playerId.equals(gameState.getImpostorId())) {
                 realtimePublisher.sendRoleAssignment(playerId,
-                        new RoleAssignment.Impostor(gameState.getHintWord(), 0));
+                        new RoleAssignment.Impostor(gameState.getHintWord(), gameState.getImpostorLives()));
             } else {
                 realtimePublisher.sendRoleAssignment(playerId,
                         new RoleAssignment.Painter(gameState.getSecretWord()));
@@ -263,6 +272,7 @@ public class GameService {
     }
 
     private static final int VOTE_SECONDS = 30;
+    private static final int TIE_BREAK_SECONDS = 15;
 
     private void startVotePhase(String roomCode) {
         GameState gs = activeGames.get(roomCode);
@@ -290,58 +300,179 @@ public class GameService {
             ScheduledFuture<?> scheduled = scheduledTasks.remove(roomCode);
             if (scheduled != null) scheduled.cancel(false);
 
-            // Tally votes
-            Map<Long, Long> tally = new HashMap<>();
-            for (Long votedId : gs.getVotes().values()) {
-                tally.merge(votedId, 1L, Long::sum);
-            }
-
-            // Find top candidate (no tie-break for now — tie = no elimination)
-            Long eliminated = null;
-            long maxVotes = 0;
-            boolean tie = false;
-            for (Map.Entry<Long, Long> entry : tally.entrySet()) {
-                if (entry.getValue() > maxVotes) {
-                    maxVotes = entry.getValue();
-                    eliminated = entry.getKey();
-                    tie = false;
-                } else if (entry.getValue() == maxVotes) {
-                    tie = true;
+            // Auto-vote: players who didn't vote count as voting for themselves (§2.3)
+            for (Long playerId : gs.getAlivePlayers()) {
+                if (!gs.getVotes().containsKey(playerId)) {
+                    gs.recordVote(playerId, playerId);
                 }
             }
-            if (tie) eliminated = null;
 
-            boolean wasImpostor = eliminated != null && eliminated.equals(gs.getImpostorId());
-            if (eliminated != null) gs.eliminatePlayer(eliminated);
-            gs.clearVotes();
+            applyVoteResolution(roomCode, gs);
+        }
+    }
 
-            Long finalEliminated = eliminated;
+    /**
+     * Tallies the current votes in gs and either:
+     * - Round 1 tie → nobody eliminated, next round.
+     * - Round 2+ tie (not already in TIE_BREAK) → VOTE_TIE, impostor gets TIE_BREAK_SECONDS.
+     * - Clear winner → eliminate, check win conditions.
+     * Called from resolveVoting (end of timer) and onVoteMove (after impostor moves their vote).
+     * Must be called within synchronized(gs).
+     */
+    private void applyVoteResolution(String roomCode, GameState gs) {
+        Map<Long, Long> tally = new HashMap<>();
+        for (Long votedId : gs.getVotes().values()) {
+            tally.merge(votedId, 1L, Long::sum);
+        }
+
+        Long eliminated = null;
+        long maxVotes = 0;
+        boolean tie = false;
+        for (Map.Entry<Long, Long> entry : tally.entrySet()) {
+            if (entry.getValue() > maxVotes) {
+                maxVotes = entry.getValue();
+                eliminated = entry.getKey();
+                tie = false;
+            } else if (entry.getValue() == maxVotes) {
+                tie = true;
+            }
+        }
+        if (tie) eliminated = null;
+
+        long finalMaxVotes = maxVotes;
+        List<GameEvent.TopVote> topVoted = tally.entrySet().stream()
+                .filter(e -> e.getValue() == finalMaxVotes)
+                .map(e -> new GameEvent.TopVote(e.getKey(), (int) (long) e.getValue()))
+                .toList();
+
+        // Round 2+ tie → enter tie-break phase (but only once — not if already in TIE_BREAK)
+        if (tie && gs.getRound() >= 2 && gs.getPhase() != GameState.Phase.TIE_BREAK) {
+            gs.setPhase(GameState.Phase.TIE_BREAK);
             realtimePublisher.publishGameEvent(roomCode,
-                    new GameEvent.VoteResult(finalEliminated, wasImpostor, List.of()));
+                    new GameEvent.VoteTie(topVoted, TIE_BREAK_SECONDS));
+            ScheduledFuture<?> f = scheduler.schedule(
+                    () -> autoExpelImpostor(roomCode), TIE_BREAK_SECONDS, TimeUnit.SECONDS);
+            ScheduledFuture<?> prev = scheduledTasks.put(roomCode, f);
+            if (prev != null) prev.cancel(false);
+            return; // votes NOT cleared — impostor still has theirs to move
+        }
 
-            if (wasImpostor) {
+        // Normal resolution (round 1 tie → eliminated stays null, no tie-break)
+        boolean wasImpostor = eliminated != null && eliminated.equals(gs.getImpostorId());
+        if (eliminated != null) gs.eliminatePlayer(eliminated);
+        gs.clearVotes();
+
+        realtimePublisher.publishGameEvent(roomCode,
+                new GameEvent.VoteResult(eliminated, wasImpostor, topVoted));
+
+        if (wasImpostor) {
+            finishGame(roomCode, gs, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT,
+                    "PAINTERS", "VOTED_OUT");
+            return;
+        }
+
+        if (gs.getAlivePlayers().size() <= 2 && gs.getAlivePlayers().contains(gs.getImpostorId())) {
+            finishGame(roomCode, gs, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING,
+                    "IMPOSTOR", "LAST_STANDING");
+            return;
+        }
+
+        int newRound = gs.getRound() + 1;
+        gs.setRound(newRound);
+        List<Long> aliveOrder = new ArrayList<>(gs.getDrawingOrder());
+        aliveOrder.removeIf(id -> !gs.isPlayerAlive(id));
+        gs.setDrawingOrder(aliveOrder);
+
+        scheduler.schedule(() -> startNewRound(roomCode, newRound), 4, TimeUnit.SECONDS);
+    }
+
+    /** Timer fires: impostor didn't move their vote → auto-expel impostor (§2.3). */
+    private void autoExpelImpostor(String roomCode) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+        synchronized (gs) {
+            if (gs.getPhase() != GameState.Phase.TIE_BREAK) return;
+            gs.clearVotes();
+            realtimePublisher.publishGameEvent(roomCode,
+                    new GameEvent.VoteResult(gs.getImpostorId(), true, List.of()));
+            finishGame(roomCode, gs, Room.WinningSide.PAINTOR, Room.EndCondition.TIE_NOT_BROKEN,
+                    "PAINTERS", "TIE_NOT_BROKEN");
+        }
+    }
+
+    private void finishGame(String roomCode, GameState gs,
+                            Room.WinningSide side, Room.EndCondition condition,
+                            String winner, String reason) {
+        Long impostorId = gs.getImpostorId();
+        String secretWord = gs.getSecretWord();
+        Map<Long, Integer> eloChanges = gameEndService.handleGameEnd(roomCode, gs, side, condition);
+        realtimePublisher.publishGameEvent(roomCode,
+                new GameEvent.GameOver(winner, reason, impostorId, secretWord));
+        sendEloUpdates(eloChanges);
+        activeGames.remove(roomCode);
+    }
+
+    // ── GameInputHandler impl ────────────────────────────────────────────────
+
+    @Override
+    public void onVote(String roomCode, Long voterId, Long votedPlayerId) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+        synchronized (gs) {
+            if (gs.getPhase() != GameState.Phase.VOTING) return;
+            gs.recordVote(voterId, votedPlayerId);
+        }
+    }
+
+    @Override
+    public void onVoteMove(String roomCode, Long impostorId, Long targetPlayerId) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+        synchronized (gs) {
+            if (gs.getPhase() != GameState.Phase.TIE_BREAK) return;
+            if (!impostorId.equals(gs.getImpostorId())) return;
+
+            ScheduledFuture<?> scheduled = scheduledTasks.remove(roomCode);
+            if (scheduled != null) scheduled.cancel(false);
+
+            gs.recordVote(impostorId, targetPlayerId);
+            applyVoteResolution(roomCode, gs);
+        }
+    }
+
+    @Override
+    public void onGuess(String roomCode, Long impostorId, String guess) {
+        GameState gs = activeGames.get(roomCode);
+        if (gs == null) return;
+        synchronized (gs) {
+            if (!impostorId.equals(gs.getImpostorId())) return;
+
+            boolean correct = guess.trim().equalsIgnoreCase(gs.getSecretWord().trim());
+
+            if (correct) {
+                realtimePublisher.sendGuessResult(impostorId,
+                        new GuessResult(true, gs.getImpostorLives()));
                 realtimePublisher.publishGameEvent(roomCode,
-                        new GameEvent.GameOver("PAINTERS", "VOTED_OUT", gs.getImpostorId(), gs.getSecretWord()));
-                activeGames.remove(roomCode);
-                return;
-            }
-
-            // Impostor wins if only 2 or fewer players remain
-            if (gs.getAlivePlayers().size() <= 2) {
+                        new GameEvent.GuessAttempt(gs.getImpostorLives(), true));
+                finishGame(roomCode, gs, Room.WinningSide.IMPAINTOR, Room.EndCondition.WORD_GUESSED,
+                        "IMPOSTOR", "WORD_GUESSED");
+            } else {
+                int livesLeft = gs.getImpostorLives() - 1;
+                gs.setImpostorLives(livesLeft);
+                realtimePublisher.sendGuessResult(impostorId, new GuessResult(false, livesLeft));
                 realtimePublisher.publishGameEvent(roomCode,
-                        new GameEvent.GameOver("IMPOSTOR", "LAST_STANDING", gs.getImpostorId(), gs.getSecretWord()));
-                activeGames.remove(roomCode);
-                return;
+                        new GameEvent.GuessAttempt(livesLeft, false));
+                if (livesLeft <= 0) {
+                    finishGame(roomCode, gs, Room.WinningSide.PAINTOR, Room.EndCondition.OUT_OF_LIVES,
+                            "PAINTERS", "OUT_OF_LIVES");
+                }
             }
+        }
+    }
 
-            // Start new round after a short pause to let clients see the result
-            int newRound = gs.getRound() + 1;
-            gs.setRound(newRound);
-            List<Long> aliveOrder = new ArrayList<>(gs.getDrawingOrder());
-            aliveOrder.removeIf(id -> !gs.isPlayerAlive(id));
-            gs.setDrawingOrder(aliveOrder);
-
-            scheduler.schedule(() -> startNewRound(roomCode, newRound), 4, TimeUnit.SECONDS);
+    private void sendEloUpdates(Map<Long, Integer> eloChanges) {
+        for (Map.Entry<Long, Integer> entry : eloChanges.entrySet()) {
+            realtimePublisher.sendEloUpdate(entry.getKey(), entry.getValue());
         }
     }
 

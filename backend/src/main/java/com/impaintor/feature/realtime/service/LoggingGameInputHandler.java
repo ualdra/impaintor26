@@ -23,4 +23,9 @@ public class LoggingGameInputHandler implements GameInputHandler {
     public void onGuess(String roomCode, Long impostorId, String guess) {
         log.info("[STUB] guess received roomCode={} impostorId={} guess={}", roomCode, impostorId, guess);
     }
+
+    @Override
+    public void onVoteMove(String roomCode, Long impostorId, Long targetPlayerId) {
+        log.info("[STUB] vote-move received roomCode={} impostorId={} target={}", roomCode, impostorId, targetPlayerId);
+    }
 }

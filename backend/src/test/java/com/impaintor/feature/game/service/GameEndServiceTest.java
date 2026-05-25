@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.models.GamePlayerRecord;
 import com.impaintor.feature.game.models.GameRecord;
-import com.impaintor.feature.game.models.GameState;
 import com.impaintor.feature.game.repository.GamePlayerRecordRepository;
 import com.impaintor.feature.game.repository.GameRecordRepository;
 import com.impaintor.feature.room.models.Room;
@@ -38,6 +39,8 @@ public class GameEndServiceTest {
 
     @InjectMocks
     private GameEndService gameEndService;
+
+    private static final String ROOM_CODE = "TEST12";
 
     private Room room;
     private GameState gameState;
@@ -61,7 +64,7 @@ public class GameEndServiceTest {
         players.add(player2);
 
         room = new Room();
-        room.setRoomCode("TEST12");
+        room.setRoomCode(ROOM_CODE);
         room.setMode(Room.Mode.RANKED);
         room.setSecretWord("secret");
         room.setPlayersNames(players);
@@ -75,6 +78,7 @@ public class GameEndServiceTest {
         gameState = new GameState();
         gameState.setImpostorId(1L); // player1 is impostor
 
+        when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(gameRecordRepository.save(any(GameRecord.class))).thenAnswer(i -> {
             GameRecord gr = i.getArgument(0);
             gr.setId(100L);
@@ -84,7 +88,7 @@ public class GameEndServiceTest {
 
     @Test
     void testHandleGameEnd_RankedMode_ImpostorWins() {
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
 
         verify(gameRecordRepository, times(1)).save(any(GameRecord.class));
         verify(gamePlayerRecordRepository, times(2)).save(any(GamePlayerRecord.class));
@@ -115,7 +119,7 @@ public class GameEndServiceTest {
     void testHandleGameEnd_CustomMode_PaintorsWin() {
         room.setMode(Room.Mode.CUSTOM);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
 
         assertEquals(11, player1.getGamesPlayed());
         assertEquals(5, player1.getGamesWon());
@@ -131,7 +135,7 @@ public class GameEndServiceTest {
     void testHandleGameEnd_SwiftplayMode_PlayersCleared() {
         room.setMode(Room.Mode.SWIFTPLAY);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
 
         assertTrue(room.getPlayersNames().isEmpty());
     }
@@ -140,7 +144,7 @@ public class GameEndServiceTest {
     void testHandleGameEnd_EmptyPlayersList() {
         room.getPlayersNames().clear();
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
 
         verify(gameRecordRepository, times(1)).save(any(GameRecord.class));
         verify(gamePlayerRecordRepository, never()).save(any(GamePlayerRecord.class));
@@ -153,7 +157,7 @@ public class GameEndServiceTest {
     void testHandleGameEnd_NoImpostorIdInGameState() {
         gameState.setImpostorId(null);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.WORD_GUESSED);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.WORD_GUESSED);
 
         assertEquals(11, player1.getGamesPlayed());
         assertEquals(6, player1.getGamesWon());
@@ -167,7 +171,7 @@ public class GameEndServiceTest {
         player1.setElo(1200);
         player2.setElo(1200);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
 
         assertEquals(1225, player1.getElo());
         assertEquals(1180, player2.getElo());
@@ -177,9 +181,9 @@ public class GameEndServiceTest {
     void testHandleGameEnd_RankedMode_EloCalculation_PaintorWinsEarly() {
         player1.setElo(1200);
         player2.setElo(1200);
-        gameState.setCurrentRound(3);
+        gameState.setRound(3);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
 
         assertEquals(1188, player1.getElo());
         assertEquals(1215, player2.getElo());
@@ -191,7 +195,7 @@ public class GameEndServiceTest {
         player2.setElo(1200);
         room.setMode(Room.Mode.CUSTOM);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.LAST_STANDING);
 
         assertEquals(1200, player1.getElo());
         assertEquals(1200, player2.getElo());
@@ -202,11 +206,10 @@ public class GameEndServiceTest {
         player1.setElo(1000);
         player2.setElo(1000);
 
-        gameState.setCurrentRound(4);
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
+        gameState.setRound(4);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
 
         assertEquals(1000, player1.getElo());
-
         assertEquals(1010, player2.getElo());
     }
 
@@ -215,7 +218,7 @@ public class GameEndServiceTest {
         player1.setElo(1200);
         player2.setElo(1200);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.WORD_GUESSED);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.IMPAINTOR, Room.EndCondition.WORD_GUESSED);
 
         assertEquals(1215, player1.getElo());
         assertEquals(1190, player2.getElo());
@@ -225,9 +228,9 @@ public class GameEndServiceTest {
     void testHandleGameEnd_RankedMode_EloCalculation_ImpostorLosesFailedWord() {
         player1.setElo(1200);
         player2.setElo(1200);
-        gameState.setCurrentRound(5);
+        gameState.setRound(5);
 
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.OUT_OF_LIVES);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.OUT_OF_LIVES);
 
         assertEquals(1183, player1.getElo());
         assertEquals(1210, player2.getElo());
@@ -245,11 +248,10 @@ public class GameEndServiceTest {
 
         room.getPlayersNames().add(player3);
 
-        gameState.setCurrentRound(5);
-        gameEndService.handleGameEnd(room, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
+        gameState.setRound(5);
+        gameEndService.handleGameEnd(ROOM_CODE, gameState, Room.WinningSide.PAINTOR, Room.EndCondition.VOTED_OUT);
 
         assertEquals(1477, player1.getElo());
-
         assertEquals(1118, player2.getElo());
         assertEquals(1118, player3.getElo());
     }
