@@ -4,37 +4,56 @@
     <div class="timer" data-testid="timer">⏱ {{ state().timeRemainingSec }}s</div>
   </header>
 
-  <p class="instructions">¿Quién crees que es el impostor? Vota tocando una tarjeta.</p>
+  @if (isLocalPlayerEliminated()) {
+    <div class="eliminated-notice" data-testid="eliminated-notice">
+      👻 Has sido eliminado. Puedes observar pero no votar.
+    </div>
 
-  <div class="vote-grid">
-    @for (id of votablePlayers(); track id) {
-      <button
-        class="vote-card"
-        [class.voted]="myVote() === id"
-        [class.disabled]="myVote() !== null && myVote() !== id"
-        [disabled]="myVote() !== null"
-        [attr.data-testid]="'vote-card-' + id"
-        (click)="onVote(id)"
-      >
-        <div class="player-label">
-          Jugador {{ id }}
-          @if (id === myPlayerId()) {
-            <span class="self-marker" data-testid="self-marker">(Tú)</span>
+    <div class="vote-grid">
+      @for (id of votablePlayers(); track id) {
+        <div class="vote-card spectator" [attr.data-testid]="'vote-card-' + id">
+          <div class="player-label">Jugador {{ id }}</div>
+          @if (snapshotFor(id); as src) {
+            <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
+          } @else {
+            <div class="no-drawing">(sin dibujo)</div>
           }
         </div>
-        @if (snapshotFor(id); as src) {
-          <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
-        } @else {
-          <div class="no-drawing">(sin dibujo)</div>
-        }
-        @if (myVote() === id) {
-          <div class="vote-marker">✓ Tu voto</div>
-        }
-      </button>
-    }
-  </div>
+      }
+    </div>
+  } @else {
+    <p class="instructions">¿Quién crees que es el impostor? Vota tocando una tarjeta.</p>
 
-  @if (myVote() !== null) {
-    <p class="confirmation">Voto registrado. Esperando al resto…</p>
+    <div class="vote-grid">
+      @for (id of votablePlayers(); track id) {
+        <button
+          class="vote-card"
+          [class.voted]="myVote() === id"
+          [class.disabled]="myVote() !== null && myVote() !== id"
+          [disabled]="myVote() !== null"
+          [attr.data-testid]="'vote-card-' + id"
+          (click)="onVote(id)"
+        >
+          <div class="player-label">
+            Jugador {{ id }}
+            @if (id === myPlayerId()) {
+              <span class="self-marker" data-testid="self-marker">(Tú)</span>
+            }
+          </div>
+          @if (snapshotFor(id); as src) {
+            <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
+          } @else {
+            <div class="no-drawing">(sin dibujo)</div>
+          }
+          @if (myVote() === id) {
+            <div class="vote-marker">✓ Tu voto</div>
+          }
+        </button>
+      }
+    </div>
+
+    @if (myVote() !== null) {
+      <p class="confirmation">Voto registrado. Esperando al resto…</p>
+    }
   }
 </div>

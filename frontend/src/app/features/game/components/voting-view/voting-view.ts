@@ -26,8 +26,14 @@ export class VotingView {
   protected readonly spectator = inject(SpectatorCanvasService);
   protected readonly myVote = signal<number | null>(null);
 
+  protected readonly isLocalPlayerEliminated = computed(() => {
+    const id = this.myPlayerId();
+    return id != null && this.state().eliminatedPlayers.includes(id);
+  });
+
   protected readonly votablePlayers = computed(() => {
-    return this.state().drawingOrder.filter((id) => id !== this.state().eliminated);
+    const eliminated = new Set(this.state().eliminatedPlayers);
+    return this.state().drawingOrder.filter((id) => !eliminated.has(id));
   });
 
   protected snapshotFor(playerId: number): string | null {

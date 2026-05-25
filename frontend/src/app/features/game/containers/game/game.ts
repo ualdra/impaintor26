@@ -125,6 +125,11 @@ export class GameComponent implements OnInit, OnDestroy {
     );
   });
 
+  protected readonly isLocalPlayerEliminated = computed(() => {
+    const id = this.myPlayerId;
+    return id != null && this.gameState.state().eliminatedPlayers.includes(id);
+  });
+
   ngOnInit(): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
     this.devMode = this.route.snapshot.queryParamMap.get('dev') === 'true';

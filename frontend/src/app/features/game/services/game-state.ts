@@ -86,6 +86,7 @@ export class GameStateService {
           ...s,
           phase: 'RESULT',
           eliminated: e.eliminated,
+          eliminatedPlayers: e.eliminated != null ? [...s.eliminatedPlayers, e.eliminated] : s.eliminatedPlayers,
           wasImpostorEliminated: e.wasImpostor,
           topVoted: e.topVoted,
         };
@@ -105,6 +106,7 @@ export class GameStateService {
           wasImpostorEliminated: null,
           topVoted: [],
           tiedPlayers: [],
+          // eliminatedPlayers intentionally preserved across rounds
         };
       case 'GAME_OVER':
         return {

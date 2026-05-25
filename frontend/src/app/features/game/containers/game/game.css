@@ -13,6 +13,17 @@
   border-radius: 8px;
 }
 
+.eliminated-banner {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  color: #92400e;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .dev-banner {
   background: #2563eb;
   color: white;

@@ -39,6 +39,7 @@ export interface GameState {
   topVoted: TopVote[];
   tiedPlayers: TopVote[];
   eliminated: number | null;
+  eliminatedPlayers: number[];
   wasImpostorEliminated: boolean | null;
 
   gameOver: GameOverInfo | null;
@@ -57,6 +58,7 @@ export const INITIAL_STATE: GameState = {
   topVoted: [],
   tiedPlayers: [],
   eliminated: null,
+  eliminatedPlayers: [],
   wasImpostorEliminated: null,
   gameOver: null,
 };

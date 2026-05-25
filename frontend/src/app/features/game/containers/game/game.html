@@ -17,6 +17,12 @@
     </div>
   }
 
+  @if (isLocalPlayerEliminated() && gameState.phase() !== 'OVER') {
+    <div class="eliminated-banner" data-testid="eliminated-banner">
+      👻 Has sido eliminado. Puedes ver cómo continúa la partida, pero ya no puedes participar.
+    </div>
+  }
+
   @switch (gameState.phase()) {
     @case ('CONNECTING') {
       <div class="connecting"><h2>Conectando…</h2></div>
