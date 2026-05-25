@@ -26,13 +26,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private readonly roomService = inject(RoomService);
 
   ngOnInit(): void {
-    // Iniciar la música del menú principal
-    this.audioService.play('/music/main_menu.mp3');
+    // La música se gestiona globalmente en app.ts vía router
   }
 
   ngOnDestroy(): void {
-    // Detener la música al salir del menú principal
-    this.audioService.stop();
   }
 
   goToProfile(): void {

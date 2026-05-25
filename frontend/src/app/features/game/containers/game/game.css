@@ -21,3 +21,13 @@
   margin-bottom: 1rem;
   font-size: 0.875rem;
 }
+
+.dev-link {
+  color: #fde68a;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.dev-link:hover {
+  color: #fff;
+}

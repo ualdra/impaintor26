@@ -91,6 +91,61 @@ export class MockGameEventEmitter {
     }
   }
 
+  /**
+   * Variante del guion pensada para demo del ImpostorOverlay (2I.8).
+   * Incluye un GUESS_ATTEMPT fallido (shake) y termina con WORD_GUESSED.
+   */
+  playImpostorGameScript(stepDelayMs = 1500): void {
+    this.cancel();
+    const drawingOrder = [7, 13, 42]; // el impostor (42) dibuja último
+
+    const script: { delay: number; ev: GameEvent }[] = [
+      { delay: 0,  ev: { type: 'GAME_START', drawingOrder, round: 1 } },
+      { delay: 1,  ev: { type: 'TURN_START', playerId: 7,  timeSeconds: 5 } },
+      { delay: 2,  ev: { type: 'TURN_END',   playerId: 7 } },
+      { delay: 3,  ev: { type: 'TURN_START', playerId: 13, timeSeconds: 5 } },
+      { delay: 4,  ev: { type: 'TURN_END',   playerId: 13 } },
+      { delay: 5,  ev: { type: 'TURN_START', playerId: 42, timeSeconds: 5 } },
+      { delay: 6,  ev: { type: 'TURN_END',   playerId: 42 } },
+      { delay: 7,  ev: { type: 'GALLERY_PHASE' } },
+      // Intento fallido — el overlay hace shake y pierde una vida
+      { delay: 8,  ev: { type: 'GUESS_ATTEMPT', correct: false, livesRemaining: 1 } },
+      { delay: 9,  ev: { type: 'VOTE_PHASE', timeSeconds: 5 } },
+      {
+        delay: 10,
+        ev: {
+          type: 'VOTE_RESULT',
+          eliminated: 7,
+          wasImpostor: false,
+          topVoted: [{ id: 7, votes: 2 }],
+        },
+      },
+      { delay: 11, ev: { type: 'NEW_ROUND', round: 2, drawingOrder: [13, 42] } },
+      { delay: 12, ev: { type: 'TURN_START', playerId: 13, timeSeconds: 5 } },
+      { delay: 13, ev: { type: 'TURN_END',   playerId: 13 } },
+      { delay: 14, ev: { type: 'TURN_START', playerId: 42, timeSeconds: 5 } },
+      { delay: 15, ev: { type: 'TURN_END',   playerId: 42 } },
+      { delay: 16, ev: { type: 'GALLERY_PHASE' } },
+      // Intento correcto — el impostor gana
+      { delay: 17, ev: { type: 'GUESS_ATTEMPT', correct: true, livesRemaining: 1 } },
+      {
+        delay: 18,
+        ev: {
+          type: 'GAME_OVER',
+          winner: 'IMPOSTOR',
+          reason: 'WORD_GUESSED',
+          impostorId: 42,
+          secretWord: 'guitarra',
+        },
+      },
+    ];
+
+    for (const step of script) {
+      const t = setTimeout(() => this.events$.next(step.ev), step.delay * stepDelayMs);
+      this.timeouts.push(t);
+    }
+  }
+
   /** Cancela cualquier guion en curso. Útil al destruir GameComponent. */
   cancel(): void {
     this.timeouts.forEach((t) => clearTimeout(t));

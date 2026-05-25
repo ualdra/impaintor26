@@ -1,0 +1,98 @@
+@if (visible) {
+  <aside
+    class="impostor-overlay"
+    [class.minimized]="minimized"
+    [class.shake]="shaking"
+    [class.out-of-lives]="outOfLives"
+    data-testid="impostor-overlay"
+    role="complementary"
+    aria-label="Panel de adivinación del impostor"
+  >
+    <!-- ── Header ───────────────────────────────────────────────── -->
+    <div class="overlay-header">
+      <span class="overlay-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-venetian-mask"><path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7h-5a8 8 0 0 0-8 2 8 8 0 0 0-8-2H2Z"/><path d="M6 11c1.5 0 3 .5 3 2-2 0-3 0-3-2Z"/><path d="M18 11c-1.5 0-3 .5-3 2 2 0 3 0 3-2Z"/></svg>
+      </span>
+      <span class="overlay-title">Eres el Impostor</span>
+      <button
+        class="minimize-btn"
+        (click)="toggleMinimize()"
+        [attr.aria-label]="minimized ? 'Expandir panel' : 'Minimizar panel'"
+        data-testid="impostor-overlay-toggle"
+        type="button"
+      >
+        @if (minimized) {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        }
+      </button>
+    </div>
+
+    <!-- ── Body (hidden when minimized) ─────────────────────────── -->
+    @if (!minimized) {
+      <div class="overlay-body">
+        <!-- Pista -->
+        <div class="hint-section">
+          <span class="hint-label">Tu pista</span>
+          <span class="hint-value" data-testid="impostor-hint">
+            {{ hint ?? '—' }}
+          </span>
+        </div>
+
+        <!-- Vidas -->
+        <div class="lives-section" data-testid="impostor-lives-section">
+          <span class="lives-label">Vidas</span>
+          <div class="lives-hearts">
+            @for (i of livesArray; track i) {
+              <span class="heart" data-testid="heart">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </span>
+            }
+            @if (outOfLives) {
+              <span class="no-lives" data-testid="no-lives">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/></svg>
+                Sin vidas
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Caja de adivinación -->
+        <div class="guess-section">
+          <label class="guess-label" for="impostor-guess-input">
+            Adivina la palabra
+          </label>
+          <div class="guess-input-row">
+            <input
+              id="impostor-guess-input"
+              class="guess-input"
+              data-testid="impostor-guess-input"
+              type="text"
+              placeholder="¿Cuál es la palabra secreta?"
+              autocomplete="off"
+              [value]="guessText()"
+              [disabled]="outOfLives"
+              (input)="onInput($event)"
+              (keydown)="onKeydown($event)"
+            />
+            <button
+              class="guess-btn"
+              data-testid="impostor-guess-submit"
+              type="button"
+              [disabled]="!guessText().trim() || outOfLives"
+              (click)="submitGuess()"
+            >
+              Enviar
+            </button>
+          </div>
+          @if (outOfLives) {
+            <p class="no-lives-msg" data-testid="no-lives-msg">
+              Sin vidas restantes. Ya no puedes adivinar.
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </aside>
+}

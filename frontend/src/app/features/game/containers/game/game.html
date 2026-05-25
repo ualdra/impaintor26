@@ -6,7 +6,15 @@
   </div>
 } @else {
   @if (devMode) {
-    <div class="dev-banner">🛠️ MODO DEV — eventos generados localmente por MockGameEventEmitter</div>
+    <div class="dev-banner">
+      🛠️ MODO DEV
+      @if (gameState.isImpostor()) {
+        — Rol: <strong>IMPOSTOR</strong> · Pista: <strong>{{ gameState.hint() }}</strong>
+      } @else {
+        — Rol: <strong>PINTOR</strong>
+        · <a class="dev-link" href="?dev=true&role=impostor">Cambiar a impostor →</a>
+      }
+    </div>
   }
 
   @switch (gameState.phase()) {
@@ -49,6 +57,15 @@
     }
   }
 
-  <!-- Slot para 2I.8 (P6): UI flotante del impostor. -->
-  <ng-content select="[impostorOverlay]" />
+  <!--
+    2I.8 — UI flotante del impostor.
+    La visibilidad se calcula aquí en el padre con signals directas del GameStateService,
+    evitando problemas de hydration SSR. Los valores se pasan como @Input al componente.
+  -->
+  <app-impostor-overlay
+    [visible]="isOverlayVisible()"
+    [hint]="gameState.hint()"
+    [lives]="gameState.impostorLives()"
+    (guessSubmitted)="sendGuess($event)"
+  />
 }

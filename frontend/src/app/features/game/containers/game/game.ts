@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, computed, effect, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -13,8 +13,10 @@ import { VotingView } from '../../components/voting-view/voting-view';
 import { TieBreakView } from '../../components/tie-break-view/tie-break-view';
 import { VoteResultView } from '../../components/vote-result-view/vote-result-view';
 import { GameOverView } from '../../components/game-over-view/game-over-view';
+import { ImpostorOverlay } from '../../components/impostor-overlay/impostor-overlay';
 import { DrawBroadcast, DrawCommand, GameEvent } from '../../models/game-event';
 import { RoleAssignment } from '../../models/role-assignment';
+import { AudioService } from '../../../../core/services/audio.service';
 
 /**
  * Container raíz del flujo del juego (Track I, 2I.1).
@@ -38,6 +40,7 @@ import { RoleAssignment } from '../../models/role-assignment';
     TieBreakView,
     VoteResultView,
     GameOverView,
+    ImpostorOverlay,
   ],
   templateUrl: './game.html',
   styleUrl: './game.css',
@@ -50,8 +53,46 @@ export class GameComponent implements OnInit, OnDestroy {
   private readonly mock = inject(MockGameEventEmitter);
   readonly gameState = inject(GameStateService);
   // Inyectado para que el servicio se construya y se subscriba a gameEvents$
-  // (reset automático en GAME_START / NEW_ROUND). Se pasa via DI a las vistas.
   private readonly spectator = inject(SpectatorCanvasService);
+  private readonly audioService = inject(AudioService);
+
+  constructor() {
+    // Escucha cambios en la fase del juego para actualizar la música
+    effect(() => {
+      const phase = this.gameState.phase();
+      const state = this.gameState.state();
+
+      switch (phase) {
+        case 'DRAWING':
+          this.audioService.playTrack('draw_phase');
+          break;
+        case 'GALLERY':
+          this.audioService.playTrack('gallery');
+          break;
+        case 'VOTING':
+          this.audioService.playTrack('voting_phase');
+          break;
+        case 'TIE_BREAK':
+          this.audioService.playTrack('tie_break');
+          break;
+        case 'OVER':
+          if (state.gameOver?.winner === 'IMPOSTOR') {
+            this.audioService.playTrack('impostor_wins');
+          } else if (state.gameOver?.winner === 'PAINTERS') {
+            this.audioService.playTrack('painters_win');
+          }
+          break;
+        case 'CONNECTING':
+        case 'RESULT':
+          // En RESULT mostramos los votos. Podríamos dejar la de votación sonando o silenciar.
+          // Por defecto la dejamos como estaba.
+          break;
+      }
+    });
+  }
+
+  /** Referencia al overlay del impostor para disparar la animación de shake. */
+  @ViewChild(ImpostorOverlay) private impostorOverlay?: ImpostorOverlay;
 
   /** Id del jugador local. PENDING — Track E lo extraerá del JWT decodificado.
    *  En modo dev hardcoded a 42 (coincide con el guion de MockGameEventEmitter). */
@@ -66,6 +107,20 @@ export class GameComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private connectedToWs = false;
 
+  /**
+   * True si el overlay del impostor debe estar visible.
+   * Fases activas: DRAWING, GALLERY, VOTING, TIE_BREAK.
+   * Se calcula aquí (en el padre) para pasar como @Input simple al overlay,
+   * evitando problemas de hydration SSR cuando el signal muta después del pre-render.
+   */
+  protected readonly isOverlayVisible = computed(() => {
+    const phase = this.gameState.phase();
+    return (
+      this.gameState.isImpostor() &&
+      (phase === 'DRAWING' || phase === 'GALLERY' || phase === 'VOTING' || phase === 'TIE_BREAK')
+    );
+  });
+
   ngOnInit(): void {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
     this.devMode = this.route.snapshot.queryParamMap.get('dev') === 'true';
@@ -73,9 +128,15 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.devMode) {
       this.myPlayerId = 42;
       this.wireMockEmitter();
-      // Aviso visual inicial para el demo.
-      queueMicrotask(() => this.mock.emitPainterAssignment('guitarra'));
-      queueMicrotask(() => this.mock.playFullGameScript());
+      // ?role=impostor → demo del ImpostorOverlay (2I.8). Default: painter.
+      const role = this.route.snapshot.queryParamMap.get('role');
+      if (role === 'impostor') {
+        queueMicrotask(() => this.mock.emitImpostorAssignment('piano', 2));
+        queueMicrotask(() => this.mock.playImpostorGameScript());
+      } else {
+        queueMicrotask(() => this.mock.emitPainterAssignment('guitarra'));
+        queueMicrotask(() => this.mock.playFullGameScript());
+      }
       return;
     }
 
@@ -104,7 +165,14 @@ export class GameComponent implements OnInit, OnDestroy {
     this.mock
       .asObservable()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((ev: GameEvent) => this.gameState.applyEvent(ev));
+      .subscribe((ev: GameEvent) => {
+        this.gameState.applyEvent(ev);
+        // Shake feedback cuando el impostor falla un intento.
+        if (ev.type === 'GUESS_ATTEMPT' && !ev.correct) {
+          this.impostorOverlay?.triggerShake();
+          this.audioService.playEffect('fail_sound', 5000); // Suena 5 segundos
+        }
+      });
     this.mock
       .asRoleObservable()
       .pipe(takeUntil(this.destroy$))
@@ -118,7 +186,14 @@ export class GameComponent implements OnInit, OnDestroy {
     this.ws
       .subscribe<GameEvent>(`/topic/room.${code}.game`)
       .pipe(takeUntil(this.destroy$))
-      .subscribe((ev) => this.gameState.applyEvent(ev));
+      .subscribe((ev) => {
+        this.gameState.applyEvent(ev);
+        // Shake feedback cuando el impostor falla un intento.
+        if (ev.type === 'GUESS_ATTEMPT' && !ev.correct) {
+          this.impostorOverlay?.triggerShake();
+          this.audioService.playEffect('fail_sound', 5000); // Suena 5 segundos
+        }
+      });
 
     this.ws
       .subscribe<DrawBroadcast>(`/topic/room.${code}.draw`)
