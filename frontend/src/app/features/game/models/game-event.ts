@@ -21,7 +21,7 @@ export type GameEvent =
   | { type: 'GAME_START'; drawingOrder: number[]; round: number }
   | { type: 'TURN_START'; playerId: number; timeSeconds: number; drawingOrder: number[] }
   | { type: 'TURN_END'; playerId: number }
-  | { type: 'GALLERY_PHASE' }
+  | { type: 'GALLERY_PHASE'; timeSeconds: number }
   | { type: 'VOTE_PHASE'; timeSeconds: number }
   | { type: 'VOTE_RESULT'; eliminated: number | null; wasImpostor: boolean; topVoted: TopVote[] }
   | { type: 'VOTE_TIE'; tiedPlayers: TopVote[]; timeSeconds: number }

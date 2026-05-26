@@ -66,7 +66,7 @@ describe('GameComponent', () => {
     fixture.detectChanges();
 
     mockEmitter.emit({ type: 'GAME_START', drawingOrder: [42], round: 1 });
-    mockEmitter.emit({ type: 'GALLERY_PHASE' });
+    mockEmitter.emit({ type: 'GALLERY_PHASE', timeSeconds: 15 });
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="gallery-phase"]')).toBeTruthy();

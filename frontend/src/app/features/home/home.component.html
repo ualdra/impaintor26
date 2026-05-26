@@ -42,4 +42,11 @@
 
   </main>
 
+  @if (showPopup()) {
+    <app-popup
+      [title]="popupTitle()"
+      [message]="popupMessage()"
+      (close)="showPopup.set(false)">
+    </app-popup>
+  }
 </div>

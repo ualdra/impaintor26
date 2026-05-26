@@ -55,7 +55,7 @@ export class MockGameEventEmitter {
       { delay: 4, ev: { type: 'TURN_END', playerId: 7 } },
       { delay: 5, ev: { type: 'TURN_START', playerId: 13, timeSeconds: 5, drawingOrder } },
       { delay: 6, ev: { type: 'TURN_END', playerId: 13 } },
-      { delay: 7, ev: { type: 'GALLERY_PHASE' } },
+      { delay: 7, ev: { type: 'GALLERY_PHASE', timeSeconds: 5 } },
       { delay: 8, ev: { type: 'VOTE_PHASE', timeSeconds: 5 } },
       {
         delay: 9,
@@ -71,7 +71,7 @@ export class MockGameEventEmitter {
       { delay: 12, ev: { type: 'TURN_END', playerId: 42 } },
       { delay: 13, ev: { type: 'TURN_START', playerId: 13, timeSeconds: 5, drawingOrder: [42, 13] } },
       { delay: 14, ev: { type: 'TURN_END', playerId: 13 } },
-      { delay: 15, ev: { type: 'GALLERY_PHASE' } },
+      { delay: 15, ev: { type: 'GALLERY_PHASE', timeSeconds: 5 } },
       { delay: 16, ev: { type: 'VOTE_PHASE', timeSeconds: 5 } },
       {
         delay: 17,
@@ -107,7 +107,7 @@ export class MockGameEventEmitter {
       { delay: 4,  ev: { type: 'TURN_END',   playerId: 13 } },
       { delay: 5,  ev: { type: 'TURN_START', playerId: 42, timeSeconds: 5, drawingOrder } },
       { delay: 6,  ev: { type: 'TURN_END',   playerId: 42 } },
-      { delay: 7,  ev: { type: 'GALLERY_PHASE' } },
+      { delay: 7,  ev: { type: 'GALLERY_PHASE', timeSeconds: 5 } },
       // Intento fallido — el overlay hace shake y pierde una vida
       { delay: 8,  ev: { type: 'GUESS_ATTEMPT', correct: false, livesRemaining: 1 } },
       { delay: 9,  ev: { type: 'VOTE_PHASE', timeSeconds: 5 } },
@@ -125,7 +125,7 @@ export class MockGameEventEmitter {
       { delay: 13, ev: { type: 'TURN_END',   playerId: 13 } },
       { delay: 14, ev: { type: 'TURN_START', playerId: 42, timeSeconds: 5, drawingOrder: [13, 42] } },
       { delay: 15, ev: { type: 'TURN_END',   playerId: 42 } },
-      { delay: 16, ev: { type: 'GALLERY_PHASE' } },
+      { delay: 16, ev: { type: 'GALLERY_PHASE', timeSeconds: 5 } },
       // Intento correcto — el impostor gana
       { delay: 17, ev: { type: 'GUESS_ATTEMPT', correct: true, livesRemaining: 1 } },
       {

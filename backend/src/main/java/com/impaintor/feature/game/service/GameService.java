@@ -261,7 +261,15 @@ public class GameService implements GameInputHandler {
                 }
             }
 
-            messagingTemplate.convertAndSend(GAME_TOPIC.formatted(roomCode), new GalleryPhaseEvent(snapshots));
+            int gallerySeconds = roomRepository.findByRoomCode(roomCode)
+                    .map(Room::getDrawTime)
+                    .filter(d -> d != null && d > 0)
+                    .orElse(30) / 2;
+            if (gallerySeconds < 5) {
+                gallerySeconds = 5;
+            }
+
+            messagingTemplate.convertAndSend(GAME_TOPIC.formatted(roomCode), new GalleryPhaseEvent(snapshots, gallerySeconds));
 
             scheduleVotePhase(roomCode, gs);
         }

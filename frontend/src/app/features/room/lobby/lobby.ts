@@ -7,6 +7,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { GameBackgroundComponent } from '../../../shared/components/game-background/game-background.component';
 import { RoomConfig, RoomService } from '../../../core/services/room.service';
+import { AppPopupComponent } from '../../../shared/components/app-popup/app-popup.component';
 
 export interface Player {
   username: string;
@@ -27,7 +28,7 @@ interface RoomDetails {
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule, RouterLink, GameBackgroundComponent],
+  imports: [CommonModule, RouterLink, GameBackgroundComponent, AppPopupComponent],
   templateUrl: './lobby.html',
   styleUrl: './lobby.css',
 })
@@ -47,6 +48,10 @@ export class Lobby implements OnInit, OnDestroy {
   isRanked = signal<boolean>(false);
   roomSize = signal<number>(8);
   countdown = signal<number | null>(null);
+
+  showPopup = signal<boolean>(false);
+  popupTitle = signal<string>('');
+  popupMessage = signal<string>('');
 
   private wsSubscription?: Subscription;
   private gameStartSub?: Subscription;
@@ -174,7 +179,9 @@ export class Lobby implements OnInit, OnDestroy {
   // Custom room: host starts manually
   startGame() {
     if (this.players().length < 3) {
-      alert('Se necesitan al menos 3 jugadores para iniciar la partida.');
+      this.popupTitle.set('Faltan jugadores');
+      this.popupMessage.set('Se necesitan al menos 3 jugadores para iniciar la partida.');
+      this.showPopup.set(true);
       return;
     }
     if (this.isHost()) {
@@ -193,7 +200,9 @@ export class Lobby implements OnInit, OnDestroy {
 
   copyCode() {
     navigator.clipboard.writeText(this.roomCode);
-    alert('¡Código copiado al portapapeles!');
+    this.popupTitle.set('Copiado');
+    this.popupMessage.set('¡Código de sala copiado al portapapeles!');
+    this.showPopup.set(true);
   }
 
   private stopIntervals(): void {

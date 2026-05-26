@@ -36,11 +36,52 @@ export class GameStateService {
     return this._state().currentDrawerId === myId;
   }
 
+  private timerInterval: any = null;
+
+  private startTimer(initialSeconds: number): void {
+    this.stopTimer();
+    if (initialSeconds <= 0) return;
+
+    this.timerInterval = setInterval(() => {
+      this._state.update((s) => {
+        if (s.timeRemainingSec <= 0) {
+          this.stopTimer();
+          return s;
+        }
+        return { ...s, timeRemainingSec: s.timeRemainingSec - 1 };
+      });
+    }, 1000);
+  }
+
+  private stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
   // ── Mutaciones ───────────────────────────────────────────────────────────
 
   applyEvent(event: GameEvent): void {
     this._state.update((s) => this.reduce(s, event));
     this.gameEvents$.next(event);
+
+    // Manejo de temporizador
+    if (
+      event.type === 'TURN_START' ||
+      event.type === 'GALLERY_PHASE' ||
+      event.type === 'VOTE_PHASE' ||
+      event.type === 'VOTE_TIE'
+    ) {
+      this.startTimer(event.timeSeconds);
+    } else if (
+      event.type === 'TURN_END' ||
+      event.type === 'VOTE_RESULT' ||
+      event.type === 'GAME_OVER' ||
+      event.type === 'NEW_ROUND'
+    ) {
+      this.stopTimer();
+    }
   }
 
   applyRoleAssignment(role: RoleAssignment): void {
@@ -58,6 +99,7 @@ export class GameStateService {
   }
 
   reset(): void {
+    this.stopTimer();
     this._state.set(structuredClone(INITIAL_STATE));
   }
 
@@ -78,7 +120,7 @@ export class GameStateService {
       case 'TURN_END':
         return { ...s, currentDrawerId: null };
       case 'GALLERY_PHASE':
-        return { ...s, phase: 'GALLERY' };
+        return { ...s, phase: 'GALLERY', timeRemainingSec: e.timeSeconds };
       case 'VOTE_PHASE':
         return { ...s, phase: 'VOTING', timeRemainingSec: e.timeSeconds };
       case 'VOTE_RESULT':

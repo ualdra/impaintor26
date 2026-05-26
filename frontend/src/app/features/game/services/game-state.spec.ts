@@ -36,20 +36,21 @@ describe('GameStateService', () => {
     });
 
     it('TURN_START → currentDrawerId y timeRemainingSec set', () => {
-      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30 });
+      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30, drawingOrder: [42] });
       expect(svc.state().currentDrawerId).toBe(42);
       expect(svc.state().timeRemainingSec).toBe(30);
     });
 
     it('TURN_END → currentDrawerId vuelve a null', () => {
-      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30 });
+      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30, drawingOrder: [42] });
       svc.applyEvent({ type: 'TURN_END', playerId: 42 });
       expect(svc.state().currentDrawerId).toBeNull();
     });
 
-    it('GALLERY_PHASE → phase=GALLERY', () => {
-      svc.applyEvent({ type: 'GALLERY_PHASE' });
+    it('GALLERY_PHASE → phase=GALLERY y timer set', () => {
+      svc.applyEvent({ type: 'GALLERY_PHASE', timeSeconds: 15 });
       expect(svc.state().phase).toBe('GALLERY');
+      expect(svc.state().timeRemainingSec).toBe(15);
     });
 
     it('VOTE_PHASE → phase=VOTING y timer set', () => {
@@ -158,7 +159,7 @@ describe('GameStateService', () => {
     });
 
     it('isMyTurn(myId) compara con currentDrawerId', () => {
-      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30 });
+      svc.applyEvent({ type: 'TURN_START', playerId: 42, timeSeconds: 30, drawingOrder: [42] });
       expect(svc.isMyTurn(42)).toBe(true);
       expect(svc.isMyTurn(7)).toBe(false);
     });
