@@ -13,7 +13,8 @@
 .phase-header h2 {
   margin: 0;
   font-family: 'Cinzel', serif;
-  font-size: 1.15rem;
+  font-size: clamp(1.3rem, 3.5vw, 1.7rem);
+  font-weight: 700;
   color: #c9a86c;
   letter-spacing: 0.04em;
 }
