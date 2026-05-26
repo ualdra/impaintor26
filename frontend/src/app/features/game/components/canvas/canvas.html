@@ -82,7 +82,8 @@
       (touchstart)="onTouchStart($event)"
       (touchmove)="onTouchMove($event)"
       (touchend)="onMouseUp()"
-      (touchcancel)="onMouseUp()">
+      (touchcancel)="onMouseUp()"
+      (contextmenu)="$event.preventDefault()">
     </canvas>
   </div>
 </div>

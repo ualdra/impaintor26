@@ -76,6 +76,7 @@ ngOnDestroy(): void {
   // ===== EVENTOS DE DIBUJO (DELEGACIÓN PURA - SRP) =====
 
   onMouseDown(event: MouseEvent): void {
+    if (event.button !== 0) return; // Solo permitir el click izquierdo para dibujar
     if (!this.isActive || !this.engine) return;
     this.engine.processPointerDown(event.clientX, event.clientY);
   }
