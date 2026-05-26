@@ -7,6 +7,7 @@ import { AudioService } from '../../core/services/audio.service';
 import { RoomService } from '../../core/services/room.service';
 import { GameBackgroundComponent } from '../../shared/components/game-background/game-background.component';
 import { AppPopupComponent } from '../../shared/components/app-popup/app-popup.component';
+import { InfoPopupComponent } from './components/info-popup/info-popup.component';
 
 /**
  * HomeComponent — Pantalla principal (menú home) de Impaintor.
@@ -17,7 +18,7 @@ import { AppPopupComponent } from '../../shared/components/app-popup/app-popup.c
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [WelcomeBannerComponent, GameMenuComponent, HomeFooterComponent, GameBackgroundComponent, AppPopupComponent],
+  imports: [WelcomeBannerComponent, GameMenuComponent, HomeFooterComponent, GameBackgroundComponent, AppPopupComponent, InfoPopupComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
@@ -29,6 +30,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   showPopup = signal<boolean>(false);
   popupTitle = signal<string>('');
   popupMessage = signal<string>('');
+  showInfo = signal<boolean>(false);
 
   ngOnInit(): void {
     // La música se gestiona globalmente en app.ts vía router
