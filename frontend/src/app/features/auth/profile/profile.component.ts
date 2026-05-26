@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GameHistoryEntry, GameHistoryService } from '../../../core/services/game-history.service';
 import { LeaderboardEntry, LeaderboardService } from '../../../core/services/leaderboard.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface ProfileDraft {
   avatarPreview: string;
@@ -27,6 +28,7 @@ export class ProfileComponent {
   private readonly router = inject(Router);
   private readonly gameHistoryService = inject(GameHistoryService);
   private readonly leaderboardService = inject(LeaderboardService);
+  private readonly authService = inject(AuthService);
 
   readonly profileDraft = signal<ProfileDraft>({
     avatarPreview: '',
@@ -94,6 +96,11 @@ export class ProfileComponent {
 
   goBackToMainMenu(): void {
     this.router.navigate(['/main_menu']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 
   onAvatarSelected(event: Event): void {

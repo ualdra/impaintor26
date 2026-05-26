@@ -33,7 +33,16 @@ export type GameAction = 'create-private' | 'find-ranked' | 'join-room';
         aria-label="Crear una partida privada"
         (click)="onAction('create-private')"
       >
-        <span class="menu-btn__icon" aria-hidden="true">🏰</span>
+        <span class="menu-btn__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem; display: inline-block; vertical-align: middle;">
+            <path d="M22 20v-9H2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z"></path>
+            <path d="M18 11V4H6v7"></path>
+            <path d="M12 2v2"></path>
+            <path d="M5 22v-4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path>
+            <path d="M9 11V9h2v2"></path>
+            <path d="M13 11V9h2v2"></path>
+          </svg>
+        </span>
         <span class="menu-btn__content">
           <span class="menu-btn__label">Crear Partida Privada</span>
           <span class="menu-btn__desc">Invita a tus amigos con un código</span>
@@ -50,7 +59,11 @@ export type GameAction = 'create-private' | 'find-ranked' | 'join-room';
         aria-label="Introducir código para unirse a partida"
         (click)="openJoinPopup()"
       >
-        <span class="menu-btn__icon" aria-hidden="true">🔑</span>
+        <span class="menu-btn__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem; display: inline-block; vertical-align: middle;">
+            <path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+          </svg>
+        </span>
         <span class="menu-btn__content">
           <span class="menu-btn__label">Unirse a Partida Privada</span>
           <span class="menu-btn__desc">Usa el código de un amigo</span>
@@ -100,7 +113,16 @@ export type GameAction = 'create-private' | 'find-ranked' | 'join-room';
         aria-label="Buscar partida competitiva en modo ranked"
         (click)="onAction('find-ranked')"
       >
-        <span class="menu-btn__icon" aria-hidden="true">⚔️</span>
+        <span class="menu-btn__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 2rem; height: 2rem; display: inline-block; vertical-align: middle;">
+            <path d="M14.5 17.5 3 6V3h3l11.5 11.5"></path>
+            <path d="M13 19 19 13"></path>
+            <path d="M16 20 20 16"></path>
+            <path d="M9.5 17.5 21 6V3h-3L6.5 14.5"></path>
+            <path d="M11 19 5 13"></path>
+            <path d="M8 20 4 16"></path>
+          </svg>
+        </span>
         <span class="menu-btn__content">
           <span class="menu-btn__label">Buscar Partida Competitiva</span>
           <span class="menu-btn__desc">Enfrenta a rivales de tu nivel</span>

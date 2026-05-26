@@ -9,9 +9,14 @@
         <span class="code-label">
           @if (isRanked()) { Partida Ranked } @else { Código de Sala }
         </span>
-        <div class="code-value" (click)="copyCode()" title="Click para copiar">
+        <div class="code-value" (click)="copyCode()" title="Click para copiar" style="display: inline-flex; align-items: center;">
           {{ roomCode }}
-          <span class="copy-icon">📋</span>
+          <span class="copy-icon" style="margin-left: 0.4rem; display: inline-flex; align-items: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+          </span>
         </div>
       </div>
     </header>
@@ -19,12 +24,22 @@
     <!-- Configuración (solo salas custom con config definida) -->
     <section class="settings-section" *ngIf="roomConfig()">
       <div class="setting-item">
-        <span class="setting-icon">⏱️</span>
+        <span class="setting-icon" style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-right: 0.3rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;">
+            <line x1="10" x2="14" y1="2" y2="2"></line>
+            <line x1="12" x2="12" y1="14" y2="11"></line>
+            <circle cx="12" cy="14" r="8"></circle>
+          </svg>
+        </span>
         <span class="setting-label">Dibujo:</span>
         <span class="setting-value">{{ roomConfig()?.drawingTime }}s</span>
       </div>
       <div class="setting-item">
-        <span class="setting-icon">❤️</span>
+        <span class="setting-icon" style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-right: 0.3rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.1rem; height: 1.1rem;">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+          </svg>
+        </span>
         <span class="setting-label">Vidas:</span>
         <span class="setting-value">{{ roomConfig()?.impostorLives }}</span>
       </div>
@@ -41,7 +56,12 @@
           </div>
           <div class="player-info">
             <span class="player-name">{{ player.username }}</span>
-            <span *ngIf="player.isHost" class="host-badge">👑 Anfitrión</span>
+            <span *ngIf="player.isHost" class="host-badge" style="display: inline-flex; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 0.95rem; height: 0.95rem; margin-right: 0.25rem;">
+                <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"></path>
+              </svg>
+              Anfitrión
+            </span>
           </div>
         </div>
 

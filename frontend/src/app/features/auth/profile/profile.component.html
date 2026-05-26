@@ -1,6 +1,9 @@
 <div class="profile-page" role="main" aria-label="Perfil de usuario">
   <header class="profile-header">
-    <button type="button" class="back-btn" (click)="goBackToMainMenu()">Volver al menú</button>
+    <div class="header-actions">
+      <button type="button" class="back-btn" (click)="goBackToMainMenu()">Volver al menú</button>
+      <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
+    </div>
     <div class="header-copy">
       <p class="eyebrow">Perfil</p>
       <h1>Tu espacio personal</h1>

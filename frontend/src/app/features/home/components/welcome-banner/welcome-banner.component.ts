@@ -13,7 +13,15 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   template: `
     <header class="welcome-banner" role="banner">
-      <div class="banner-emblem" aria-hidden="true">🎨</div>
+      <div class="banner-emblem" aria-hidden="true" style="display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 2.2rem; height: 2.2rem; color: #c9a86c;">
+          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12c0 2.75 2.25 5 5 5h1a2 2 0 0 1 2 2c0 1.66-1.34 3-3 3-1.66 0-3-1.34-3-3"></path>
+          <circle cx="7.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="11.5" cy="7.5" r=".5" fill="currentColor"></circle>
+          <circle cx="16.5" cy="9.5" r=".5" fill="currentColor"></circle>
+          <circle cx="15.5" cy="14.5" r=".5" fill="currentColor"></circle>
+        </svg>
+      </div>
       <h1 class="welcome-title">
         Bienvenido,
         <span class="player-name">{{ playerName }}</span>

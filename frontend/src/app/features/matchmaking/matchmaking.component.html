@@ -2,7 +2,16 @@
   <div class="matchmaking-card">
 
     <header class="card-header">
-      <span class="title-icon" aria-hidden="true">⚔️</span>
+      <span class="title-icon" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; margin-right: 0.5rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1.5rem; height: 1.5rem; color: #c9a86c;">
+          <path d="M14.5 17.5 3 6V3h3l11.5 11.5"></path>
+          <path d="M13 19 19 13"></path>
+          <path d="M16 20 20 16"></path>
+          <path d="M9.5 17.5 21 6V3h-3L6.5 14.5"></path>
+          <path d="M11 19 5 13"></path>
+          <path d="M8 20 4 16"></path>
+        </svg>
+      </span>
       <h1 class="card-title">RANKED</h1>
       <p class="card-subtitle">Partida Competitiva — 5 jugadores</p>
     </header>
@@ -22,11 +31,22 @@
 
       <div class="status-section">
         <div class="status-row">
-          <span class="status-icon" aria-hidden="true">🕐</span>
+          <span class="status-icon" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-right: 0.4rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1.2rem; height: 1.2rem;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </span>
           <span class="status-text">{{ formatTime(waitSeconds()) }}</span>
         </div>
         <div class="status-row">
-          <span class="status-icon" aria-hidden="true">🎯</span>
+          <span class="status-icon" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-right: 0.4rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1.2rem; height: 1.2rem;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+          </span>
           <span class="status-text">
             Buscando ELO {{ lowerElo() }}&nbsp;–&nbsp;{{ myElo() + searchRange() }}
           </span>

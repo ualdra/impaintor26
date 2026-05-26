@@ -290,6 +290,7 @@
 .menu-btn__icon {
   font-size: 2rem;
   flex-shrink: 0;
+  color: #ffd166;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   transition: transform 0.2s ease;
 }

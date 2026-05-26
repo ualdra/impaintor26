@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,11 +28,12 @@ public class WordGroupSeeder implements CommandLineRunner {
     }
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
-        long existing = repository.countByLanguage("es");
-        if (existing > 0) {
-            log.info("WordGroup seed skipped: {} Spanish groups already in database.", existing);
-            return;
+        repository.clearRoomWordGroupReferences();
+        long deleted = repository.deleteBySource("pipeline");
+        if (deleted > 0) {
+            log.info("Removed {} stale pipeline word groups.", deleted);
         }
 
         log.info("Seeding word groups from {} ...", CSV_PATH);

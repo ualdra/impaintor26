@@ -1,7 +1,14 @@
 <div class="gallery-view" data-testid="gallery-phase">
   <header class="phase-header">
     <h2>Galería — Ronda {{ state().round }}</h2>
-    <div class="timer" data-testid="timer">⏱ {{ state().timeRemainingSec }}s</div>
+    <div class="timer" data-testid="timer" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 1rem; height: 1rem;">
+        <line x1="10" x2="14" y1="2" y2="2"></line>
+        <line x1="12" x2="12" y1="14" y2="11"></line>
+        <circle cx="12" cy="14" r="8"></circle>
+      </svg>
+      {{ state().timeRemainingSec }}s
+    </div>
   </header>
 
   <p class="instructions">Observa los dibujos de esta ronda. ¡La votación comenzará pronto!</p>
