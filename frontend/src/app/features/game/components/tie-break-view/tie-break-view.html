@@ -13,7 +13,7 @@
 
   @if (isImpostor()) {
     <p class="instructions impostor-prompt" data-testid="impostor-prompt">
-      Mueve tu voto para romper el empate. Si no actúas, serás expulsado.
+      Tienes un voto extra. Úsalo para romper el empate. Si no actúas, serás expulsado.
     </p>
 
     <div class="vote-grid">
@@ -21,7 +21,6 @@
         <button
           class="vote-card"
           [class.voted]="myMove() === entry.id"
-          [class.previous-vote]="myPreviousVote() === entry.id && myMove() === null"
           [class.disabled]="myMove() !== null && myMove() !== entry.id"
           [disabled]="myMove() !== null"
           [attr.data-testid]="'tied-card-' + entry.id"
@@ -42,18 +41,15 @@
             <div class="no-drawing">(sin dibujo)</div>
           }
 
-          @if (myPreviousVote() === entry.id && myMove() === null) {
-            <div class="previous-vote-marker">← Tu voto anterior</div>
-          }
           @if (myMove() === entry.id) {
-            <div class="vote-marker">✓ Tu nuevo voto</div>
+            <div class="vote-marker">✓ Voto extra</div>
           }
         </button>
       }
     </div>
 
     @if (myMove() !== null) {
-      <p class="confirmation">Voto movido. Esperando resultado…</p>
+      <p class="confirmation">Voto extra enviado. Esperando resultado…</p>
     }
   } @else {
     <p class="instructions waiting-prompt" data-testid="waiting-prompt">

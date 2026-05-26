@@ -60,7 +60,6 @@
         <app-tie-break-view
           [state]="gameState.state()"
           [myPlayerId]="myPlayerId"
-          [myPreviousVote]="myVotedPlayerId"
           (voteMoved)="sendVoteMove($event)"
         />
       }

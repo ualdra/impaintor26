@@ -6,8 +6,10 @@ import { SpectatorCanvasService } from '../../services/spectator-canvas';
 /**
  * 2I.5 — Vista de desempate.
  *
- * Muestra los jugadores empatados con sus dibujos. El impostor puede mover
- * su voto a uno de ellos para romper el empate; los demás ven estado pasivo.
+ * Muestra los jugadores empatados con sus dibujos. El impostor recibe un
+ * voto extra que puede depositar en cualquiera de los jugadores empatados
+ * para romper el empate. Su voto original permanece inalterado, por lo que
+ * siempre puede resolver el empate sin delatarse a sí mismo.
  */
 @Component({
   selector: 'app-tie-break-view',
@@ -19,7 +21,6 @@ import { SpectatorCanvasService } from '../../services/spectator-canvas';
 export class TieBreakView {
   readonly state = input.required<GameState>();
   readonly myPlayerId = input<number | null>(null);
-  readonly myPreviousVote = input<number | null>(null);
 
   @Output() voteMoved = new EventEmitter<number>();
 
