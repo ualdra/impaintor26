@@ -79,14 +79,9 @@ public class GameService implements GameInputHandler {
         }
 
         WordGroup wordGroup = resolveWordGroup(room);
-        List<String> candidateWords = new ArrayList<>();
-        candidateWords.add(wordGroup.getWord1());
-        candidateWords.add(wordGroup.getWord2());
-        candidateWords.add(wordGroup.getWord3());
-        Collections.shuffle(candidateWords);
-
-        String secretWord = candidateWords.get(0);
-        String hintWord = candidateWords.get(1);
+        // word1 is always the drawable word shown to painters; hint is randomly chosen from word2 or word3
+        String secretWord = wordGroup.getWord1();
+        String hintWord = Math.random() < 0.5 ? wordGroup.getWord2() : wordGroup.getWord3();
 
         List<User> shuffledPlayers = new ArrayList<>(players);
         Collections.shuffle(shuffledPlayers);
