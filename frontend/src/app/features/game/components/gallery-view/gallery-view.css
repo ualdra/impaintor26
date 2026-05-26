@@ -1,2 +1,81 @@
-.phase-placeholder { padding: 1rem; border: 2px dashed #999; border-radius: 8px; background: #fafafa; }
-.phase-placeholder pre { font-size: 0.75rem; background: #eee; padding: 0.5rem; border-radius: 4px; overflow-x: auto; }
+.gallery-view {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.phase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.phase-header h2 {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  color: #c9a86c;
+  letter-spacing: 0.04em;
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  background: rgba(201, 168, 108, 0.12);
+  border: 1px solid #c9a86c;
+  color: #c9a86c;
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-family: 'Nunito', sans-serif;
+}
+
+.instructions {
+  color: #7a5530;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-card {
+  background: rgba(46, 21, 5, 0.6);
+  border: 1px solid rgba(92, 58, 30, 0.7);
+  border-radius: 8px;
+  padding: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.player-label {
+  font-weight: 600;
+  color: #c9a86c;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.gallery-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.no-drawing {
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(46, 21, 5, 0.4);
+  border: 1px dashed rgba(92, 58, 30, 0.5);
+  border-radius: 4px;
+  color: #7a5530;
+  font-size: 0.875rem;
+}

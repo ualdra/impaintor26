@@ -1,8 +1,6 @@
 .voting-view {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-  padding: 1.25rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .phase-header {
@@ -14,58 +12,76 @@
 
 .phase-header h2 {
   margin: 0;
-  font-size: 1.25rem;
-  color: #333;
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  color: #c9a86c;
+  letter-spacing: 0.04em;
 }
 
 .timer {
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  background: #2563eb;
-  color: white;
-  padding: 0.25rem 0.75rem;
+  font-weight: 700;
+  background: rgba(201, 168, 108, 0.12);
+  border: 1px solid #c9a86c;
+  color: #c9a86c;
+  padding: 0.25rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-family: 'Nunito', sans-serif;
 }
 
 .instructions {
-  color: #555;
+  color: #f5e6c8;
   margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.eliminated-notice {
+  margin-bottom: 1rem;
+  padding: 0.6rem 1rem;
+  background: rgba(46, 21, 5, 0.6);
+  border: 1px solid rgba(92, 58, 30, 0.7);
+  border-radius: 6px;
+  color: #c9a86c;
+  font-weight: 600;
+  text-align: center;
 }
 
 .vote-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
 }
 
+/* ── Clickable vote card ── */
 .vote-card {
-  background: #fff;
-  border: 2px solid #e5e7eb;
+  background: rgba(46, 21, 5, 0.6);
+  border: 2px solid rgba(92, 58, 30, 0.7);
   border-radius: 8px;
   padding: 0.75rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   text-align: center;
-  font-family: inherit;
+  font-family: 'Nunito', sans-serif;
+  color: #fdf5e6;
 }
 
 .vote-card:hover:not(:disabled) {
-  border-color: #2563eb;
+  border-color: #c9a86c;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 16px rgba(201, 168, 108, 0.2);
 }
 
 .vote-card.voted {
-  border-color: #10b981;
-  background: #ecfdf5;
+  border-color: #52b788;
+  background: rgba(82, 183, 136, 0.1);
 }
 
 .vote-card.disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -73,28 +89,37 @@
   cursor: default;
 }
 
+/* ── Spectator (eliminated player) card ── */
+.vote-card.spectator {
+  cursor: default;
+  opacity: 0.65;
+  border-style: dashed;
+}
+
 .player-label {
-  font-weight: 600;
-  color: #333;
+  font-weight: 700;
+  color: #c9a86c;
+  font-size: 0.9rem;
 }
 
 .self-marker {
   display: inline-block;
   margin-left: 0.4rem;
   padding: 0.1rem 0.4rem;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(201, 168, 108, 0.15);
+  color: #c9a86c;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  border: 1px solid rgba(201, 168, 108, 0.4);
 }
 
 .vote-thumb {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: contain;
-  background: #fafafa;
-  border: 1px solid #ddd;
+  background: #fff;
+  border: 1px solid rgba(92, 58, 30, 0.5);
   border-radius: 4px;
 }
 
@@ -103,42 +128,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f9fafb;
-  border: 1px dashed #d1d5db;
+  background: rgba(46, 21, 5, 0.4);
+  border: 1px dashed rgba(92, 58, 30, 0.5);
   border-radius: 4px;
-  color: #999;
+  color: #7a5530;
   font-size: 0.875rem;
 }
 
 .vote-marker {
-  background: #10b981;
-  color: white;
+  background: rgba(82, 183, 136, 0.25);
+  border: 1px solid #52b788;
+  color: #7de8b0;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .confirmation {
   margin-top: 1rem;
   text-align: center;
-  color: #10b981;
+  color: #7de8b0;
   font-weight: 600;
-}
-
-.eliminated-notice {
-  margin-bottom: 1rem;
-  padding: 0.6rem 1rem;
-  background: #fef3c7;
-  border: 1px solid #fcd34d;
-  border-radius: 6px;
-  color: #92400e;
-  font-weight: 600;
-  text-align: center;
-}
-
-.vote-card.spectator {
-  cursor: default;
-  opacity: 0.75;
-  border-style: dashed;
 }
