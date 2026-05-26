@@ -30,6 +30,7 @@ public class WordGroupSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        repository.clearRoomWordGroupReferences();
         long deleted = repository.deleteBySource("pipeline");
         if (deleted > 0) {
             log.info("Removed {} stale pipeline word groups.", deleted);

@@ -3,6 +3,7 @@ package com.impaintor.feature.wordgroup.repositories;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +22,8 @@ public interface WordGroupRepository extends JpaRepository<WordGroup, Long> {
     long countByLanguage(String language);
 
     long deleteBySource(String source);
+
+    @Modifying
+    @Query(value = "UPDATE rooms SET word_group_id = NULL", nativeQuery = true)
+    void clearRoomWordGroupReferences();
 }
