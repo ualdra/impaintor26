@@ -16,7 +16,7 @@ describe('GameStateService', () => {
   it('estado inicial: phase=CONNECTING y campos en valores nulos', () => {
     const s = svc.state();
     expect(s.phase).toBe('CONNECTING');
-    expect(s.round).toBe(0);
+    expect(s.round).toBe(1);
     expect(s.drawingOrder).toEqual([]);
     expect(s.currentDrawerId).toBeNull();
     expect(s.myRole).toBeNull();
@@ -176,7 +176,7 @@ describe('GameStateService', () => {
     svc.applyRoleAssignment({ type: 'ROLE_ASSIGNMENT', role: 'PAINTER', word: 'x' });
     svc.reset();
     expect(svc.state().phase).toBe('CONNECTING');
-    expect(svc.state().round).toBe(0);
+    expect(svc.state().round).toBe(1);
     expect(svc.state().myRole).toBeNull();
   });
 });

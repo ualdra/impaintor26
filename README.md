@@ -1,6 +1,7 @@
 # ImPaintor
 [![Backend Tests](https://github.com/jpg486-ual/impaintor26/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/jpg486-ual/impaintor26/actions/workflows/backend-ci.yml)
 [![Frontend Tests](https://github.com/jpg486-ual/impaintor26/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/jpg486-ual/impaintor26/actions/workflows/frontend-ci.yml)
+[![Deploy](https://github.com/jpg486-ual/impaintor26/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/jpg486-ual/impaintor26/actions/workflows/deploy.yml)
 
 ImPaintor es un juego multijugador de dibujo y deducción con roles ocultos. La partida gira alrededor de una palabra secreta que solo conocen los pintores, mientras que un jugador actúa como impostor e intenta que no lo descubran. La partida termina cuando el impostor adivina la palabra, es echado por votación o falla al adivinar.
 

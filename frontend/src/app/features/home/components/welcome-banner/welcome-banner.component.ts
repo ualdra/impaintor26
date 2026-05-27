@@ -23,7 +23,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         </svg>
       </div>
       <h1 class="welcome-title">
-        Bienvenido,
+        Hola,
         <span class="player-name">{{ playerName }}</span>
       </h1>
       <p class="welcome-subtitle">¿Listo para pintar… o engañar?</p>

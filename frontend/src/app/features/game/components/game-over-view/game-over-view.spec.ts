@@ -35,14 +35,14 @@ describe('GameOverView', () => {
     const fixture = TestBed.createComponent(GameOverView);
     fixture.componentRef.setInput('state', gameOverState('PAINTERS', 'VOTED_OUT'));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[data-testid="winner"]')?.textContent).toContain('Pintores');
+    expect(fixture.nativeElement.querySelector('.winner-subtitle')?.textContent).toContain('Pintores');
   });
 
   it('victoria IMPOSTOR muestra ganador correcto', () => {
     const fixture = TestBed.createComponent(GameOverView);
     fixture.componentRef.setInput('state', gameOverState('IMPOSTOR', 'WORD_GUESSED'));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[data-testid="winner"]')?.textContent).toContain('Impostor');
+    expect(fixture.nativeElement.querySelector('.winner-subtitle')?.textContent).toContain('Impostor');
   });
 
   it('revela la palabra secreta', () => {

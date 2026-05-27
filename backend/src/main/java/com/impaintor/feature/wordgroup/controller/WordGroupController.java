@@ -17,10 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.impaintor.feature.wordgroup.models.WordGroup;
 import com.impaintor.feature.wordgroup.repositories.WordGroupRepository;
 
-// TODO: Cuando exista la clase User y la integración con auth (Track A),
-//       proteger los endpoints POST y DELETE con @PreAuthorize("hasRole('ADMIN')").
-//       Los admins se pueden definir en application.yml mediante una lista impaintor.admin-emails.
-
 @RestController
 @RequestMapping("api/words")
 public class WordGroupController {
@@ -45,7 +41,6 @@ public class WordGroupController {
 
     @PostMapping
     public ResponseEntity<?> createWordGroup(@RequestBody WordGroup wordGroup) {
-        // TODO: cuando exista User+auth, exigir rol ADMIN.
 
         String error = validateNewWordGroup(wordGroup);
         if (error != null) {
@@ -65,7 +60,6 @@ public class WordGroupController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteWordGroup(@PathVariable Long id) {
-        // TODO: cuando exista User+auth, exigir rol ADMIN.
 
         if (!wordGroupRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

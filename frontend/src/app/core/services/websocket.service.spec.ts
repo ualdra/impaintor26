@@ -62,27 +62,27 @@ describe('WebSocketService', () => {
   });
 
   it('connect activa el cliente STOMP', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     expect(mock.client.activate).toHaveBeenCalled();
   });
 
   it('connect es idempotente — segunda llamada no re-activa', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     mock.client.active = true;
     const firstActivateSpy = mock.client.activate;
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     expect(firstActivateSpy).toHaveBeenCalledTimes(1);
   });
 
   it('disconnect desactiva el cliente', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     mock.client.active = true;
     service.disconnect();
     expect(mock.client.deactivate).toHaveBeenCalled();
   });
 
   it('subscribe después de CONNECTED se aplica inmediatamente', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     mock.client.onConnect?.({});
 
     const sub = service.subscribe<{ foo: string }>('/topic/test').subscribe();
@@ -92,7 +92,7 @@ describe('WebSocketService', () => {
 
   it('subscribe antes de CONNECT encola y se aplica al conectar', () => {
     const received: unknown[] = [];
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     service.subscribe<{ foo: string }>('/topic/early').subscribe((v) => received.push(v));
     expect(mock.client.subscribe).not.toHaveBeenCalled();
 
@@ -101,7 +101,7 @@ describe('WebSocketService', () => {
   });
 
   it('unsubscribe en una sub pendiente la marca como cancelada y no se aplica al conectar', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     const sub = service.subscribe<{ foo: string }>('/topic/cancel').subscribe();
     sub.unsubscribe();
 
@@ -111,7 +111,7 @@ describe('WebSocketService', () => {
 
   it('subscribe parsea Message.body como JSON y emite payload tipado', () => {
     const received: { foo: string }[] = [];
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     mock.client.onConnect?.({});
 
     let capturedHandler: ((msg: { body: string }) => void) | undefined;
@@ -127,7 +127,7 @@ describe('WebSocketService', () => {
   });
 
   it('send publica al cliente cuando está conectado', () => {
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     mock.client.connected = true;
 
     service.send('/app/test', { hello: 'world' });
@@ -139,7 +139,7 @@ describe('WebSocketService', () => {
 
   it('send loggea warning si no está conectado', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    service.connect({ url: '/ws', jwt: 'token' });
+    service.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     // mock.client.connected sigue siendo false (por defecto)
     service.send('/app/test', { hello: 'world' });
     expect(warnSpy).toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('WebSocketService', () => {
       ],
     });
     const ssrService = TestBed.inject(WebSocketService);
-    ssrService.connect({ url: '/ws', jwt: 'token' });
+    ssrService.connect({ url: 'ws://localhost/ws', jwt: 'token' });
     expect(mock.client).toBeNull();
   });
 });

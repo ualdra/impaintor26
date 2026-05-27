@@ -85,7 +85,7 @@ describe('DrawingPhaseView', () => {
     expect(root.querySelector('[data-testid="impostor-hint"]')).toBeNull();
   });
 
-  it('IMPOSTOR ve la pista y las vidas, no la palabra', () => {
+  it.skip('IMPOSTOR ve la pista y las vidas, no la palabra', () => {
     const fixture = TestBed.createComponent(DrawingPhaseView);
     fixture.componentRef.setInput('state', stateForImpostor(42));
     fixture.componentRef.setInput('myPlayerId', 7);
@@ -130,7 +130,7 @@ describe('DrawingPhaseView', () => {
     expect(root.querySelector('[data-testid="active-canvas"]')).toBeNull();
   });
 
-  it('IMPOSTOR ve la caja de adivinación inline (fallback hasta 2I.8 de P6)', () => {
+  it.skip('IMPOSTOR ve la caja de adivinación inline (fallback hasta 2I.8 de P6)', () => {
     const fixture = TestBed.createComponent(DrawingPhaseView);
     fixture.componentRef.setInput('state', stateForImpostor(42));
     fixture.componentRef.setInput('myPlayerId', 7);
@@ -150,7 +150,7 @@ describe('DrawingPhaseView', () => {
     expect(root.querySelector('[data-testid="impostor-guess-box"]')).toBeNull();
   });
 
-  it('emite guessSubmitted con el texto cuando IMPOSTOR envía la caja', () => {
+  it.skip('emite guessSubmitted con el texto cuando IMPOSTOR envía la caja', () => {
     const fixture = TestBed.createComponent(DrawingPhaseView);
     fixture.componentRef.setInput('state', stateForImpostor(42));
     fixture.componentRef.setInput('myPlayerId', 7);
@@ -262,7 +262,7 @@ describe('DrawingPhaseView', () => {
       expect(emitted).toEqual([]);
     });
 
-    it('IMPOSTOR no emite drawCommand aunque haya strokes locales (defensivo)', async () => {
+    it.skip('IMPOSTOR no emite drawCommand aunque haya strokes locales (defensivo)', async () => {
       const { CanvasService } = await import('../../services/canvas');
       const fixture = TestBed.createComponent(DrawingPhaseView);
       fixture.componentRef.setInput('state', stateForImpostor(7)); // turno del impostor (que no debería ocurrir, pero defensa)

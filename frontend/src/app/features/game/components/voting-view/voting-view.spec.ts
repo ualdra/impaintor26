@@ -61,6 +61,7 @@ describe('VotingView', () => {
   });
 
   it('click en tarjeta emite voteCast con el playerId', () => {
+    vi.useFakeTimers();
     const fixture = TestBed.createComponent(VotingView);
     fixture.componentRef.setInput('state', baseState());
     fixture.componentRef.setInput('myPlayerId', 42);
@@ -72,11 +73,15 @@ describe('VotingView', () => {
     const card7 = fixture.nativeElement.querySelector('[data-testid="vote-card-7"]') as HTMLElement;
     card7.click();
     fixture.detectChanges();
+    
+    vi.runAllTimers();
 
     expect(voted).toBe(7);
+    vi.useRealTimers();
   });
 
   it('después de votar, no permite votar otra vez', () => {
+    vi.useFakeTimers();
     const fixture = TestBed.createComponent(VotingView);
     fixture.componentRef.setInput('state', baseState());
     fixture.componentRef.setInput('myPlayerId', 42);
@@ -88,13 +93,15 @@ describe('VotingView', () => {
     const card7 = fixture.nativeElement.querySelector('[data-testid="vote-card-7"]') as HTMLElement;
     card7.click();
     fixture.detectChanges();
-    card7.click();
-    fixture.detectChanges();
+    
+    vi.runAllTimers();
+
     const card13 = fixture.nativeElement.querySelector('[data-testid="vote-card-13"]') as HTMLElement;
     card13.click();
     fixture.detectChanges();
 
     expect(emissions).toEqual([7]);
+    vi.useRealTimers();
   });
 
   it('marca visualmente la tarjeta votada con clase "voted"', () => {
@@ -112,7 +119,7 @@ describe('VotingView', () => {
 
   it('excluye al jugador eliminado de las tarjetas', () => {
     const fixture = TestBed.createComponent(VotingView);
-    fixture.componentRef.setInput('state', { ...baseState(), eliminated: 7 });
+    fixture.componentRef.setInput('state', { ...baseState(), eliminatedPlayers: [7] });
     fixture.componentRef.setInput('myPlayerId', 42);
     fixture.detectChanges();
 

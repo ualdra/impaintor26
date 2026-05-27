@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,7 +24,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.model.GalleryPhaseEvent;
-import com.impaintor.feature.game.service.GameEndService;
 import com.impaintor.feature.realtime.dto.outbound.RoleAssignment;
 import com.impaintor.feature.realtime.service.RealtimePublisher;
 import com.impaintor.feature.room.models.Room;
@@ -43,8 +43,7 @@ class GameServiceTest {
     private GameEndService gameEndService;
     private GameLogicService gameLogicService;
     private ScheduledExecutorService scheduler;
-    @SuppressWarnings("rawtypes")
-    private ScheduledFuture scheduledFuture;
+    private ScheduledFuture<?> scheduledFuture;
     private GameService service;
 
     @BeforeEach
@@ -70,7 +69,7 @@ class GameServiceTest {
         when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
+        doReturn(scheduledFuture).when(scheduler).schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS));
 
         GameState gameState = service.initializeGame(ROOM_CODE);
 
@@ -91,7 +90,9 @@ class GameServiceTest {
         assertThat(room.getSecretWord()).isEqualTo(gameState.getSecretWord());
         assertThat(room.getHintWord()).isEqualTo(gameState.getHintWord());
 
-        verify(scheduler).schedule(any(Runnable.class), eq(30L), eq(TimeUnit.SECONDS));
+        ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler).schedule(initRunnableCaptor.capture(), eq(3L), eq(TimeUnit.SECONDS));
+        initRunnableCaptor.getValue().run();
 
         ArgumentCaptor<RoleAssignment> roleCaptor = ArgumentCaptor.forClass(RoleAssignment.class);
         verify(realtimePublisher, times(3)).sendRoleAssignment(anyLong(), roleCaptor.capture());
@@ -120,16 +121,20 @@ class GameServiceTest {
         when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
+        doReturn(scheduledFuture).when(scheduler).schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS));
 
         GameState first = service.initializeGame(ROOM_CODE);
         GameState second = service.initializeGame(ROOM_CODE);
 
         assertThat(second).isSameAs(first);
-        verify(roomRepository, times(2)).findById(ROOM_CODE);
+        verify(roomRepository, times(1)).findByRoomCode(ROOM_CODE);
         verify(wordGroupRepository, times(1)).findRandom();
         verify(roomRepository, times(1)).save(room);
-        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(30L), eq(TimeUnit.SECONDS));
+        
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler, times(1)).schedule(runnableCaptor.capture(), eq(3L), eq(TimeUnit.SECONDS));
+        runnableCaptor.getValue().run();
+        
         verify(realtimePublisher, times(3)).sendRoleAssignment(anyLong(), any(RoleAssignment.class));
     }
 
@@ -141,7 +146,7 @@ class GameServiceTest {
         when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
+        doReturn(scheduledFuture).when(scheduler).schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS));
 
         GameState gameState = service.initializeGame(ROOM_CODE);
         gameState.recordCanvasSnapshot(11L, "data:image/png;base64,111");
@@ -176,7 +181,7 @@ class GameServiceTest {
         when(roomRepository.findByRoomCode(ROOM_CODE)).thenReturn(Optional.of(room));
         when(wordGroupRepository.findRandom()).thenReturn(Optional.of(wordGroup));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(scheduler.schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS))).thenReturn(scheduledFuture);
+        doReturn(scheduledFuture).when(scheduler).schedule(any(Runnable.class), anyLong(), eq(TimeUnit.SECONDS));
 
         GameState gameState = service.initializeGame(ROOM_CODE);
         gameState.recordCanvasSnapshot(11L, "data:image/png;base64,111");

@@ -64,6 +64,7 @@ class WebSocketIntegrationTest {
         }
     }
 
+    @SuppressWarnings("removal")
     @BeforeEach
     void setUp() {
         client = new WebSocketStompClient(new StandardWebSocketClient());

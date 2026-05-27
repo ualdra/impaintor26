@@ -48,6 +48,11 @@ export class DrawingEngine {
     if (!this.isDrawing) return;
     const point = this.getCanvasPoint(clientX, clientY);
     this.activeTool.onMove(point, this.createContext(), this.config);
+
+    // Throttle point emission to prevent massive STOMP arrays that delay/crash the connection
+    if (this.currentStroke.length >= 10) {
+      this.emitStroke(true);
+    }
   }
 
   processPointerUp(): void {
@@ -55,7 +60,7 @@ export class DrawingEngine {
     this.activeTool.onEnd(this.createContext());
     this.isDrawing = false;
     if (this.currentStroke.length > 0) {
-      this.emitStroke();
+      this.emitStroke(false);
     }
   }
 
@@ -103,14 +108,21 @@ export class DrawingEngine {
     };
   }
 
-  private emitStroke(): void {
+  private emitStroke(keepLastPoint: boolean = false): void {
     this.onStrokeComplete({
       type: 'STROKE',
-      points: this.currentStroke,
+      points: [...this.currentStroke],
       color: this.config.color,
       thickness: this.config.thickness,
       timestamp: Date.now()
     });
-    this.currentStroke = [];
+    
+    if (keepLastPoint && this.currentStroke.length > 0) {
+      // Keep the last point to seamlessly connect with the next chunk
+      const lastPoint = this.currentStroke[this.currentStroke.length - 1];
+      this.currentStroke = [lastPoint];
+    } else {
+      this.currentStroke = [];
+    }
   }
 }
