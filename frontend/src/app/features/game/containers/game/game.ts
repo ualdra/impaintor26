@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit, ViewChild, computed, effect, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 import { GameStateService } from '../../services/game-state';
 import { MockGameEventEmitter } from '../../services/mock-game-event-emitter';
@@ -53,6 +54,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private readonly ws = inject(WebSocketService);
   private readonly authService = inject(AuthService);
   private readonly mock = inject(MockGameEventEmitter);
+  private readonly http = inject(HttpClient);
   readonly gameState = inject(GameStateService);
   // Inyectado para que el servicio se construya y se subscriba a gameEvents$
   private readonly spectator = inject(SpectatorCanvasService);
@@ -110,6 +112,9 @@ export class GameComponent implements OnInit, OnDestroy {
   /** True si estamos usando el emitter mock (modo dev). */
   devMode = false;
 
+  /** Mapa de nombres de usuario asociados al ID de jugador. */
+  protected readonly playerNames = signal<Record<number, string>>({});
+
   private readonly destroy$ = new Subject<void>();
   private connectedToWs = false;
 
@@ -136,6 +141,8 @@ export class GameComponent implements OnInit, OnDestroy {
     const code = this.route.snapshot.paramMap.get('code') ?? '';
     this.devMode = this.route.snapshot.queryParamMap.get('dev') === 'true';
 
+    this.loadRoomPlayers(code);
+
     if (this.devMode) {
       this.myPlayerId = 42;
       this.wireMockEmitter();
@@ -161,6 +168,32 @@ export class GameComponent implements OnInit, OnDestroy {
     if (user) this.myPlayerId = user.id;
 
     this.connectWebSocket(code, token);
+  }
+
+  private loadRoomPlayers(code: string): void {
+    if (this.devMode) {
+      this.playerNames.set({
+        42: this.authService.getCurrentUser()?.username ?? 'Tú',
+        1: 'Pintor Velázquez',
+        2: 'Pintor Goya',
+        3: 'Pintor Picasso',
+        4: 'Pintor Dalí'
+      });
+      return;
+    }
+
+    this.http.get<any>(`/api/rooms/${code}`).subscribe({
+      next: (room) => {
+        if (room && room.playersNames) {
+          const map: Record<number, string> = {};
+          room.playersNames.forEach((p: any) => {
+            map[p.id] = p.username;
+          });
+          this.playerNames.set(map);
+        }
+      },
+      error: (err) => console.error('[Game] Error loading player names:', err)
+    });
   }
 
   ngOnDestroy(): void {

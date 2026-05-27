@@ -12,27 +12,47 @@
   margin-bottom: 1.5rem;
 }
 
-.winner-banner.painters {
-  background: rgba(82, 183, 136, 0.1);
-  border: 2px solid rgba(82, 183, 136, 0.5);
+.winner-banner.victory {
+  background: rgba(74, 124, 89, 0.15);
+  border: 2px solid #4a7c59;
+  box-shadow: 0 0 15px rgba(74, 124, 89, 0.3);
 }
 
-.winner-banner.impostor {
-  background: rgba(124, 77, 255, 0.1);
-  border: 2px solid rgba(124, 77, 255, 0.5);
+.winner-banner.defeat {
+  background: rgba(124, 58, 58, 0.15);
+  border: 2px solid #7c3a3a;
+  box-shadow: 0 0 15px rgba(124, 58, 58, 0.3);
+}
+
+.winner-banner.victory h2 {
+  color: #6fcf97;
+  text-shadow: 0 0 10px rgba(111, 207, 151, 0.4);
+}
+
+.winner-banner.defeat h2 {
+  color: #eb5757;
+  text-shadow: 0 0 10px rgba(235, 87, 87, 0.4);
 }
 
 .winner-banner h2 {
-  margin: 0 0 0.5rem 0;
-  font-family: 'Cinzel', serif;
-  font-size: 1.8rem;
-  color: #c9a86c;
+  margin: 0 0 0.25rem 0;
+  font-family: 'MedievalSharp', 'Cinzel', Georgia, serif;
+  font-size: 2.2rem;
   letter-spacing: 0.04em;
+}
+
+.winner-subtitle {
+  font-family: 'MedievalSharp', 'Cinzel', Georgia, serif;
+  font-size: 1.15rem;
+  color: #f5e6c8;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.02em;
 }
 
 .winner-banner .reason {
   margin: 0;
-  color: #7a5530;
+  color: #d4b896;
+  font-family: 'Kalam', 'Nunito', cursive, sans-serif;
   font-size: 0.95rem;
 }
 

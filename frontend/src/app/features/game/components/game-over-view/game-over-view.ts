@@ -26,7 +26,15 @@ const REASON_TEXT: Record<EndReason, string> = {
 })
 export class GameOverView {
   @Input({ required: true }) state!: GameState;
+  @Input() playerNames: Record<number, string> = {};
   @Output() playAgain = new EventEmitter<void>();
+
+  protected get hasWon(): boolean {
+    if (!this.state || !this.state.gameOver) return false;
+    const winner = this.state.gameOver.winner;
+    const role = this.state.myRole;
+    return (winner === 'PAINTERS' && role === 'PAINTER') || (winner === 'IMPOSTOR' && role === 'IMPOSTOR');
+  }
 
   protected reasonText(reason: EndReason): string {
     return REASON_TEXT[reason];

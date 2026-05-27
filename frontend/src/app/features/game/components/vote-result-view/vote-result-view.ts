@@ -17,4 +17,5 @@ import { GameState } from '../../models/game-state';
 })
 export class VoteResultView {
   @Input({ required: true }) state!: GameState;
+  @Input() playerNames: Record<number, string> = {};
 }

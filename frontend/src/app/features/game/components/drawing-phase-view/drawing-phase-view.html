@@ -29,7 +29,7 @@
       </div>
     } @else {
       <div class="spectator" data-testid="spectator-view">
-        <p class="turn-hint">{{ state().currentDrawerId }} está dibujando…</p>
+        <p class="turn-hint">{{ playerNames()[state().currentDrawerId!] || 'Jugador ' + state().currentDrawerId }} está dibujando…</p>
         @if (drawerSnapshot()) {
           <img [src]="drawerSnapshot()" alt="Dibujo en directo" class="spectator-img" />
         } @else {

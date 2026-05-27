@@ -42,6 +42,7 @@
         <app-drawing-phase-view
           [state]="gameState.state()"
           [myPlayerId]="myPlayerId"
+          [playerNames]="playerNames()"
           (drawCommand)="sendDraw($event)"
           (guessSubmitted)="sendGuess($event)"
         />
@@ -53,6 +54,7 @@
         <app-voting-view
           [state]="gameState.state()"
           [myPlayerId]="myPlayerId"
+          [playerNames]="playerNames()"
           (voteCast)="sendVote($event)"
         />
       }
@@ -60,15 +62,20 @@
         <app-tie-break-view
           [state]="gameState.state()"
           [myPlayerId]="myPlayerId"
+          [playerNames]="playerNames()"
           (voteMoved)="sendVoteMove($event)"
         />
       }
       @case ('RESULT') {
-        <app-vote-result-view [state]="gameState.state()" />
+        <app-vote-result-view
+          [state]="gameState.state()"
+          [playerNames]="playerNames()"
+        />
       }
       @case ('OVER') {
         <app-game-over-view
           [state]="gameState.state()"
+          [playerNames]="playerNames()"
           (playAgain)="onPlayAgain()"
         />
       }

@@ -11,7 +11,6 @@
       <div class="form-group">
         <label for="drawingTime">
           Tiempo de dibujo por turno (seg.)
-          <span class="en-subtitle">Drawing time per turn (sec.)</span>
         </label>
         <input
           id="drawingTime"
@@ -32,7 +31,6 @@
       <div class="form-group">
         <label for="impostorLives">
           Vidas del Impostor
-          <span class="en-subtitle">Impostor lives</span>
         </label>
         <input
           id="impostorLives"
@@ -56,10 +54,10 @@
 
       <div class="form-actions">
         <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading">
-          Cancelar<br><small>Cancel</small>
+          Cancelar<br>
         </button>
         <button type="submit" class="btn-submit" [disabled]="roomForm.invalid || isLoading">
-          <span *ngIf="!isLoading">Crear Sala<br><small>Create Room</small></span>
+          <span *ngIf="!isLoading">Crear Sala<br></span>
           <span *ngIf="isLoading" class="loader"></span>
         </button>
       </div>

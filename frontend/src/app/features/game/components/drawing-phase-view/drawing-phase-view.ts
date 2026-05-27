@@ -40,6 +40,7 @@ import { SpectatorCanvasService } from '../../services/spectator-canvas';
 export class DrawingPhaseView implements OnInit, OnDestroy {
   readonly state = input.required<GameState>();
   readonly myPlayerId = input<number | null>(null);
+  readonly playerNames = input<Record<number, string>>({});
 
   /** Comando de dibujo (STROKE o CLEAR) listo para reenviar al servidor. */
   @Output() drawCommand = new EventEmitter<DrawCommand>();

@@ -27,7 +27,7 @@
           (click)="onCardClick(entry.id)"
         >
           <div class="player-label">
-            Jugador {{ entry.id }}
+            {{ playerNames()[entry.id] || 'Jugador ' + entry.id }}
             @if (entry.id === myPlayerId()) {
               <span class="self-marker">(Tú)</span>
             }
@@ -59,7 +59,7 @@
     <div class="vote-grid readonly">
       @for (entry of state().tiedPlayers; track entry.id) {
         <div class="vote-card tied-readonly" [attr.data-testid]="'tied-card-' + entry.id">
-          <div class="player-label">Jugador {{ entry.id }}</div>
+          <div class="player-label">{{ playerNames()[entry.id] || 'Jugador ' + entry.id }}</div>
 
           <div class="vote-count-badge">{{ entry.votes }} voto(s)</div>
 

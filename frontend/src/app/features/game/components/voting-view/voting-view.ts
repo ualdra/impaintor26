@@ -27,6 +27,7 @@ export class VotingView implements OnInit, OnDestroy {
 
   readonly state = input.required<GameState>();
   readonly myPlayerId = input<number | null>(null);
+  readonly playerNames = input<Record<number, string>>({});
 
   @Output() voteCast = new EventEmitter<number>();
 

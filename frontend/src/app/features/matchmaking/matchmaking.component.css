@@ -167,11 +167,18 @@
 .status-icon {
   font-size: 1rem;
   line-height: 1;
+  color: #c9a86c;
 }
 
 .status-text {
   font-size: 0.95rem;
   color: #f5e6c8;
+}
+
+.timer-text {
+  color: #c9a86c;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(201, 168, 108, 0.2);
 }
 
 /* ---- Error ---- */

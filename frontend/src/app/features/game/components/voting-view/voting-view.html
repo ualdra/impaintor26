@@ -24,7 +24,7 @@
     <div class="vote-grid">
       @for (id of votablePlayers(); track id) {
         <div class="vote-card spectator" [attr.data-testid]="'vote-card-' + id">
-          <div class="player-label">Jugador {{ id }}</div>
+          <div class="player-label">{{ playerNames()[id] || 'Jugador ' + id }}</div>
           @if (snapshotFor(id); as src) {
             <img [src]="src" alt="Dibujo del jugador {{ id }}" class="vote-thumb" />
           } @else {
@@ -45,7 +45,7 @@
           (click)="onVote(id)"
         >
           <div class="player-label">
-            Jugador {{ id }}
+            {{ playerNames()[id] || 'Jugador ' + id }}
             @if (id === myPlayerId()) {
               <span class="self-marker" data-testid="self-marker">(Tú)</span>
             }

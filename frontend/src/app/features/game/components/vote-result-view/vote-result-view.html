@@ -11,7 +11,7 @@
     <div class="elimination-result">
       <p>
         Jugador eliminado:
-        <strong data-testid="eliminated-player-id">{{ state.eliminated }}</strong>
+        <strong data-testid="eliminated-player-id">{{ playerNames[state.eliminated] || 'Jugador ' + state.eliminated }}</strong>
       </p>
       @if (state.wasImpostorEliminated) {
         <p class="impostor-reveal was-impostor" data-testid="was-impostor-message">
@@ -30,7 +30,7 @@
     <ul class="top-voted-list" data-testid="top-voted-list">
       @for (entry of state.topVoted; track entry.id) {
         <li [attr.data-testid]="'top-voted-entry-' + entry.id">
-          Jugador {{ entry.id }} — {{ entry.votes }} voto(s)
+          {{ playerNames[entry.id] || 'Jugador ' + entry.id }} — {{ entry.votes }} voto(s)
         </li>
       }
     </ul>
