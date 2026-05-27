@@ -24,9 +24,11 @@ import io.jsonwebtoken.security.Keys;
 public class JwtTokenValidator implements TokenValidator {
 
     private final SecretKey key;
+    private final String expectedIssuer;
 
     public JwtTokenValidator(RealtimeProperties props) {
         this.key = Keys.hmacShaKeyFor(props.jwt().secret().getBytes(StandardCharsets.UTF_8));
+        this.expectedIssuer = props.jwt().issuer();
     }
 
     @Override
@@ -37,6 +39,7 @@ public class JwtTokenValidator implements TokenValidator {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(key)
+                    .requireIssuer(expectedIssuer)
                     .build()
                     .parseSignedClaims(rawToken)
                     .getPayload();
