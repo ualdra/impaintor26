@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.impaintor.feature.game.model.GameState;
 import com.impaintor.feature.game.model.GamePlayerRecord;
@@ -66,7 +67,10 @@ public class GameEndService {
         int paintorsCount = 0;
         double impostorElo = 1000;
 
-        List<User> players = room.getPlayersNames();
+        List<User> players = room.getPlayersNames().stream()
+                .map(player -> userRepository.findById(player.getId()).orElse(player))
+                .collect(Collectors.toList());
+
         for (User user : players) {
             boolean isImpostor = gameState.getImpostorId() != null && gameState.getImpostorId().equals(user.getId());
             if (isImpostor) {

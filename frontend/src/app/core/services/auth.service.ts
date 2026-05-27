@@ -16,6 +16,7 @@ import {
 })
 export class AuthService {
   private apiUrl = '/api/auth';
+  private usersApiUrl = '/api/users';
   private tokenKey = 'auth_token';
   private userKey = 'current_user';
   private platformId = inject(PLATFORM_ID);
@@ -103,6 +104,23 @@ export class AuthService {
    */
   getCurrentUser(): User | null {
     return this.getUserFromStorage();
+  }
+
+  /**
+   * Sincroniza el usuario actual en localStorage y en el estado reactivo.
+   */
+  syncCurrentUser(user: User): void {
+    this.saveUser(user);
+    this.updateAuthState({ user });
+  }
+
+  /**
+   * Refresca el usuario desde backend (/api/users/me).
+   */
+  refreshCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.usersApiUrl}/me`).pipe(
+      tap((user) => this.syncCurrentUser(user))
+    );
   }
 
   /**

@@ -16,7 +16,10 @@ public final class UserMapper {
             user.getUsername(),
             user.getElo(),
             user.getGamesPlayed(),
-            user.getGamesWon()
+            user.getGamesWon(),
+            user.getAvatarData(),
+            user.getCountryCode(),
+            user.getBiography()
         );
     }
 
@@ -28,7 +31,10 @@ public final class UserMapper {
             user.getElo(),
             user.getGamesPlayed(),
             user.getGamesWon(),
-            user.getCreatedAt()
+            user.getCreatedAt(),
+            user.getAvatarData(),
+            user.getCountryCode(),
+            user.getBiography()
         );
     }
 

@@ -9,4 +9,8 @@ export interface User {
   elo: number;
   gamesPlayed: number;
   gamesWon: number;
+  createdAt?: string;
+  avatarData?: string;
+  countryCode?: string;
+  biography?: string;
 }

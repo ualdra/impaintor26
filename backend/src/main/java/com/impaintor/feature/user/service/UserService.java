@@ -9,6 +9,8 @@ import com.impaintor.feature.user.models.User;
 import com.impaintor.feature.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import java.util.Locale;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final Set<String> EUROPEAN_COUNTRY_CODES = Set.of(
+        "AL", "AD", "AM", "AT", "AZ", "BY", "BE", "BA", "BG", "HR",
+        "CY", "CZ", "DK", "EE", "FI", "FR", "GE", "DE", "GR", "HU",
+        "IS", "IE", "IT", "KZ", "XK", "LV", "LI", "LT", "LU", "MT",
+        "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU",
+        "SM", "RS", "SK", "SI", "ES", "SE", "CH", "TR", "UA", "GB", "VA"
+    );
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,6 +53,28 @@ public class UserService {
 
         if (StringUtils.hasText(request.password())) {
             user.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        if (request.countryCode() != null) {
+            String normalizedCountry = request.countryCode().trim().toUpperCase(Locale.ROOT);
+            if (normalizedCountry.isBlank()) {
+                user.setCountryCode(null);
+            } else {
+                if (!EUROPEAN_COUNTRY_CODES.contains(normalizedCountry)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Country must belong to Europe");
+                }
+                user.setCountryCode(normalizedCountry);
+            }
+        }
+
+        if (request.biography() != null) {
+            String normalizedBiography = request.biography().trim();
+            user.setBiography(normalizedBiography.isBlank() ? null : normalizedBiography);
+        }
+
+        if (request.avatarData() != null) {
+            String normalizedAvatar = request.avatarData().trim();
+            user.setAvatarData(normalizedAvatar.isBlank() ? null : normalizedAvatar);
         }
 
         User updatedUser = userRepository.save(user);

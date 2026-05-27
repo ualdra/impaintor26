@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/impaintordb}
-    username: ${SPRING_DATASOURCE_USERNAME:impaintor}
-    password: ${SPRING_DATASOURCE_PASSWORD:impaintor_pass}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:impaintor;DB_CLOSE_DELAY=-1;MODE=PostgreSQL}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,7 +28,7 @@ jwt:
 impaintor:
   realtime:
     broker:
-      mode: ${REALTIME_BROKER_MODE:relay}        # relay | simple
+      mode: ${REALTIME_BROKER_MODE:simple}        # relay | simple
       relay-host: ${SPRING_RABBITMQ_HOST:localhost}
       relay-port: ${REALTIME_RELAY_PORT:61613}    # STOMP port on RabbitMQ
       relay-login: ${SPRING_RABBITMQ_USERNAME:impaintor}

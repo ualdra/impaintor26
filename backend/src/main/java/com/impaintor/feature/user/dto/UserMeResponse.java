@@ -9,6 +9,9 @@ public record UserMeResponse(
     Integer elo,
     Integer gamesPlayed,
     Integer gamesWon,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    String avatarData,
+    String countryCode,
+    String biography
 ) {
 }

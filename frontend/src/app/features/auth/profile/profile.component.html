@@ -2,39 +2,52 @@
   <header class="profile-header">
     <div class="header-actions">
       <button type="button" class="back-btn" (click)="goBackToMainMenu()">Volver al menú</button>
-      <button type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
+      <button *ngIf="!isViewingOther()" type="button" class="logout-btn" (click)="logout()">Cerrar sesión</button>
     </div>
     <div class="header-copy">
-      <p class="eyebrow">Perfil</p>
-      <h1>Tu espacio personal</h1>
-      <p class="subtitle">Diseño de perfil reservado para futuras partidas, historial y clasificación.</p>
+      <p class="eyebrow">{{ isViewingOther() ? 'Perfil de jugador' : 'Perfil' }}</p>
+      <h1>{{ isViewingOther() ? viewedUsername() : 'Tu espacio personal' }}</h1>
+      <p class="subtitle">{{ isViewingOther() ? 'Estadísticas y datos públicos de este jugador.' : 'Diseño de perfil reservado para futuras partidas, historial y clasificación.' }}</p>
     </div>
   </header>
 
   <section class="profile-summary">
+    <!-- Panel izquierdo: avatar + stats -->
     <article class="avatar-card panel">
       <div class="avatar-preview" [class.has-image]="profileDraft().avatarPreview">
         <img *ngIf="profileDraft().avatarPreview" [src]="profileDraft().avatarPreview" alt="Vista previa del avatar" />
-        <span *ngIf="!profileDraft().avatarPreview">A</span>
+        <span *ngIf="!profileDraft().avatarPreview">{{ (isViewingOther() ? viewedUsername() : profileDraft().nombreVisible).charAt(0).toUpperCase() || 'A' }}</span>
       </div>
 
-      <label for="avatar-upload" class="avatar-upload-btn">Añadir avatar</label>
-      <input id="avatar-upload" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
+      <ng-container *ngIf="!isViewingOther()">
+        <label for="avatar-upload" class="avatar-upload-btn">Añadir avatar</label>
+        <input id="avatar-upload" type="file" accept="image/*" (change)="onAvatarSelected($event)" />
+      </ng-container>
+
+      <!-- Biografía en modo vista ajena -->
+      <div *ngIf="isViewingOther() && profileDraft().biografia" class="readonly-bio">
+        <p class="readonly-bio__label">Biografía</p>
+        <p class="readonly-bio__text">{{ profileDraft().biografia }}</p>
+      </div>
+      <div *ngIf="isViewingOther() && profileDraft().pais" class="readonly-country">
+        <p class="readonly-bio__label">País</p>
+        <p class="readonly-bio__text">{{ profileDraft().pais }}</p>
+      </div>
 
       <div class="profile-mini-stats">
         <article class="stat-card">
           <span class="stat-label">Partidas jugadas</span>
-          <strong class="stat-value">--</strong>
+          <strong class="stat-value">{{ gamesPlayed() }}</strong>
         </article>
 
         <article class="stat-card">
           <span class="stat-label">Partidas ganadas</span>
-          <strong class="stat-value">--</strong>
+          <strong class="stat-value">{{ gamesWon() }}</strong>
         </article>
 
         <article class="stat-card">
           <span class="stat-label">ELO</span>
-          <strong class="stat-value">--</strong>
+          <strong class="stat-value">{{ elo() }}</strong>
         </article>
 
         <article class="stat-card">
@@ -44,9 +57,34 @@
       </div>
     </article>
 
+    <!-- Panel derecho: formulario edición (solo perfil propio) -->
     <article class="panel account-panel">
       <h2>Datos de cuenta</h2>
+
+      <!-- MODO LECTURA: perfil ajeno -->
+      <ng-container *ngIf="isViewingOther()">
+        <div class="readonly-profile">
+          <p class="readonly-profile__row">
+            <span class="readonly-profile__label">Nombre</span>
+            <span class="readonly-profile__value">{{ profileDraft().nombreVisible || '—' }}</span>
+          </p>
+          <p class="readonly-profile__row">
+            <span class="readonly-profile__label">País</span>
+            <span class="readonly-profile__value">{{ profileDraft().pais || '—' }}</span>
+          </p>
+          <p class="readonly-profile__row">
+            <span class="readonly-profile__label">Biografía</span>
+            <span class="readonly-profile__value">{{ profileDraft().biografia || '—' }}</span>
+          </p>
+        </div>
+      </ng-container>
+
+      <!-- MODO EDICIÓN: perfil propio -->
+      <ng-container *ngIf="!isViewingOther()">
       <form (ngSubmit)="onSaveProfile()" class="edit-form">
+        <p *ngIf="profileError()" class="form-message form-message--error">{{ profileError() }}</p>
+        <p *ngIf="profileSuccess()" class="form-message form-message--success">{{ profileSuccess() }}</p>
+
         <div class="field-group full-width">
           <label for="nombre-visible">Nombre visible</label>
           <input
@@ -70,7 +108,9 @@
             name="correoElectronico"
             placeholder="correo@ejemplo.com"
             autocomplete="email"
+            readonly
           />
+          <small class="field-note">El correo se muestra desde tu sesión y no puede editarse aquí.</small>
         </div>
 
         <div class="field-group">
@@ -82,7 +122,7 @@
               [ngModel]="profileDraft().contrasenaActual"
               (ngModelChange)="profileDraft.set({ ...profileDraft(), contrasenaActual: $event })"
               name="contrasenaActual"
-              placeholder="Introduce tu contraseña actual"
+              placeholder="Por seguridad, vuelve a escribirla si quieres cambiar contraseña"
               autocomplete="current-password"
             />
             <button
@@ -159,14 +199,17 @@
 
         <div class="field-group">
           <label for="pais">País</label>
-          <input
+          <select
             id="pais"
-            type="text"
             [ngModel]="profileDraft().pais"
             (ngModelChange)="profileDraft.set({ ...profileDraft(), pais: $event })"
             name="pais"
-            placeholder="Tu país"
-          />
+          >
+            <option value="">Selecciona un país europeo</option>
+            <option *ngFor="let country of europeanCountries" [value]="country.code">
+              {{ country.label }}
+            </option>
+          </select>
         </div>
 
         <div class="field-group full-width">
@@ -181,8 +224,11 @@
           ></textarea>
         </div>
 
-        <button type="submit" class="save-btn">Guardar cambios</button>
+        <button type="submit" class="save-btn" [disabled]="isSaving()">
+          {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
       </form>
+      </ng-container>
     </article>
   </section>
 
@@ -217,10 +263,17 @@
       <h2>Clasificación</h2>
       <ng-container *ngIf="leaderboardEntries().length > 0; else emptyLeaderboard">
         <ul class="leaderboard-list">
-          <li class="leaderboard-item" *ngFor="let user of leaderboardEntries(); let i = index">
+          <li
+            class="leaderboard-item leaderboard-item--clickable"
+            *ngFor="let user of leaderboardEntries(); let i = index"
+            (click)="viewUserProfile(user.id)"
+            role="button"
+            [title]="'Ver perfil de ' + user.username"
+          >
             <span class="leaderboard-rank">#{{ i + 1 }}</span>
             <span class="leaderboard-username">{{ user.username }}</span>
             <span class="leaderboard-elo">ELO {{ user.elo }}</span>
+            <span class="leaderboard-arrow">›</span>
           </li>
         </ul>
       </ng-container>

@@ -1,5 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
+
+export interface UpdateMeRequest {
+  username?: string;
+  password?: string;
+  countryCode?: string;
+  biography?: string;
+  avatarData?: string;
+}
 
 /**
  * UserService — Responsabilidad Única (SRP): gestiona exclusivamente el estado
@@ -15,6 +25,9 @@ import { User } from '../models/user.model';
   providedIn: 'root',
 })
 export class UserService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = '/api/users';
+
   /**
    * Estado del usuario como señal reactiva (Angular Signals).
    * Se inicializa con un usuario de ejemplo para desarrollo/demo.
@@ -31,5 +44,17 @@ export class UserService {
    */
   setCurrentUser(user: User | null): void {
     this._currentUser.set(user);
+  }
+
+  getMe(): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/me`);
+  }
+
+  updateMe(payload: UpdateMeRequest): Observable<User> {
+    return this.http.put<User>(`${this.baseUrl}/me`, payload);
+  }
+
+  getPublicProfile(userId: number): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/${userId}`);
   }
 }

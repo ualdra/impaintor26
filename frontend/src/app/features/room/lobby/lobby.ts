@@ -22,13 +22,13 @@ interface RoomDetails {
   gameState: 'WAITING' | 'PLAYING' | 'FINISHED';
   impostorTries: number | null;
   drawTime: number | null;
-  playersNames: { id: number; username: string }[];
+  playersNames: { id: number; username: string; avatarData?: string }[];
 }
 
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule, RouterLink, GameBackgroundComponent, AppPopupComponent],
+  imports: [CommonModule, GameBackgroundComponent, AppPopupComponent],
   templateUrl: './lobby.html',
   styleUrl: './lobby.css',
 })
@@ -77,7 +77,11 @@ export class Lobby implements OnInit, OnDestroy {
 
         // Map backend User objects to lobby Player interface. The creator/first to join is host.
         this.players.set(
-          room.playersNames.map((u, index) => ({ username: u.username, isHost: index === 0 }))
+          room.playersNames.map((u, index) => ({ 
+            username: u.username, 
+            isHost: index === 0,
+            avatarUrl: u.avatarData
+          }))
         );
 
         // Update the room config signal
@@ -109,7 +113,11 @@ export class Lobby implements OnInit, OnDestroy {
         next: (room) => {
           if (room.playersNames) {
             this.players.set(
-              room.playersNames.map((u: any, index: number) => ({ username: u.username, isHost: index === 0 }))
+              room.playersNames.map((u: any, index: number) => ({ 
+                username: u.username, 
+                isHost: index === 0,
+                avatarUrl: u.avatarData
+              }))
             );
 
             const currentUser = this.authService.getCurrentUser();

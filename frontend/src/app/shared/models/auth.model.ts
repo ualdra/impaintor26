@@ -26,6 +26,9 @@ export interface User {
   gamesPlayed: number;
   gamesWon: number;
   createdAt: string;
+  avatarData?: string;
+  countryCode?: string;
+  biography?: string;
 }
 
 export interface AuthState {

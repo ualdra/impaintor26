@@ -5,6 +5,9 @@ public record UserPublicResponse(
     String username,
     Integer elo,
     Integer gamesPlayed,
-    Integer gamesWon
+    Integer gamesWon,
+    String avatarData,
+    String countryCode,
+    String biography
 ) {
 }

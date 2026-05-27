@@ -58,6 +58,15 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String avatarData;
+
+    @Column(length = 2)
+    private String countryCode;
+
+    @Column(length = 500)
+    private String biography;
+
     @PrePersist
     void prePersist() {
         if (createdAt == null) {
