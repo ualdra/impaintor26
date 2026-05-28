@@ -104,4 +104,4 @@ Frontend:
 2. Crea una sala o únete con un código.
 3. Espera al resto de jugadores en el lobby.
 4. Inicia la partida y sigue las fases de dibujo, galería, votación y posible desempate.
-5. La partida termina cuando el impostor es descubierto, gana adivinando o falla la palabra.
+5. La partida termina cuando el impostor es descubierto, falla la palabra o gana adivinando.
