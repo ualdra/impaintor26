@@ -20,6 +20,9 @@ public class JwtService {
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
 
+    @Value("${impaintor.realtime.jwt.issuer}")
+    private String issuer;
+
     public String generateToken(AppUserDetails userDetails) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
@@ -27,6 +30,7 @@ public class JwtService {
         return Jwts.builder()
             .subject(userDetails.getUsername())
             .claim("uid", userDetails.getId())
+            .issuer(issuer)
             .issuedAt(now)
             .expiration(expiry)
             .signWith(getSigningKey())
