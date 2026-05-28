@@ -90,9 +90,7 @@ class GameServiceTest {
         assertThat(room.getSecretWord()).isEqualTo(gameState.getSecretWord());
         assertThat(room.getHintWord()).isEqualTo(gameState.getHintWord());
 
-        ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(scheduler).schedule(initRunnableCaptor.capture(), eq(3L), eq(TimeUnit.SECONDS));
-        initRunnableCaptor.getValue().run();
+        verify(scheduler).schedule(any(Runnable.class), eq(30L), eq(TimeUnit.SECONDS));
 
         ArgumentCaptor<RoleAssignment> roleCaptor = ArgumentCaptor.forClass(RoleAssignment.class);
         verify(realtimePublisher, times(3)).sendRoleAssignment(anyLong(), roleCaptor.capture());
@@ -127,14 +125,10 @@ class GameServiceTest {
         GameState second = service.initializeGame(ROOM_CODE);
 
         assertThat(second).isSameAs(first);
-        verify(roomRepository, times(1)).findByRoomCode(ROOM_CODE);
+        verify(roomRepository, times(2)).findById(ROOM_CODE);
         verify(wordGroupRepository, times(1)).findRandom();
         verify(roomRepository, times(1)).save(room);
-        
-        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(scheduler, times(1)).schedule(runnableCaptor.capture(), eq(3L), eq(TimeUnit.SECONDS));
-        runnableCaptor.getValue().run();
-        
+        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(30L), eq(TimeUnit.SECONDS));
         verify(realtimePublisher, times(3)).sendRoleAssignment(anyLong(), any(RoleAssignment.class));
     }
 

@@ -71,8 +71,8 @@ class JwtTokenValidatorTest {
     private static String signedToken(Long id, String username, Instant exp, String secret, String issuer) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(UTF_8));
         return Jwts.builder()
-                .subject(username)
-                .claim("uid", id)
+                .subject(String.valueOf(id))
+                .claim("username", username)
                 .issuer(issuer)
                 .expiration(Date.from(exp))
                 .signWith(key)
